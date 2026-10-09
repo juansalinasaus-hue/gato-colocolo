@@ -3,13 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gato Colocolo - Sobriedad Financiera</title>
+    <title>Gato Colocolo - Terminal Financiera</title>
     <style>
         :root {
             --bg-color: #0a0a0c;
             --card-bg: #131318;
             --accent-green: #10b981;
             --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --accent-blue: #3b82f6;
             --text-main: #e2e8f0;
             --text-muted: #94a3b8;
             --border-color: #27272a;
@@ -20,81 +22,107 @@
             padding: 0;
             background-color: var(--bg-color);
             color: var(--text-main);
-            font-family: monospace, system-ui, -apple-system;
+            font-family: monospace, system-ui, -apple-system, sans-serif;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
         header {
-            padding: 16px;
+            padding: 14px;
             text-align: center;
             border-bottom: 1px solid var(--border-color);
+            background: #0d0d11;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .title {
-            color: #f59e0b;
+            color: var(--accent-amber);
             font-weight: bold;
             font-size: 1.1rem;
             margin: 0;
+            letter-spacing: 1px;
         }
 
         .status-badge {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: var(--accent-green);
-            margin-top: 4px;
+            margin-top: 3px;
+        }
+
+        .gato-avatar-box {
+            width: 75px;
+            height: 75px;
+            margin: 8px auto;
+            transition: transform 0.3s ease;
+        }
+
+        .gato-avatar-box.celebrate {
+            animation: bounce 0.6s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-8px); }
         }
 
         .main-container {
             flex: 1;
             padding: 16px;
-            padding-bottom: 80px;
+            padding-bottom: 85px;
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
         }
 
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
 
         .card {
             background-color: var(--card-bg);
             border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 16px;
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
         .metric-big {
-            font-size: 2.5rem;
+            font-size: 2.6rem;
             font-weight: bold;
             color: var(--accent-green);
             text-align: center;
-            margin: 8px 0;
+            margin: 4px 0;
         }
 
         .btn {
             width: 100%;
-            padding: 14px;
-            border-radius: 6px;
+            padding: 12px;
+            border-radius: 8px;
             border: none;
             font-weight: bold;
             cursor: pointer;
             margin-top: 8px;
+            font-family: inherit;
+            transition: transform 0.1s, filter 0.2s;
         }
 
+        .btn:active { transform: scale(0.98); }
         .btn-green { background-color: #065f46; color: #a7f3d0; }
         .btn-red { background-color: #7f1d1d; color: #fecaca; }
+        .btn-blue { background-color: #1e3a8a; color: #bfdbfe; }
+        .btn-amber { background-color: #78350f; color: #fef3c7; }
 
         .progress-bar-bg {
             background-color: #27272a;
             border-radius: 8px;
-            height: 16px;
+            height: 14px;
             width: 100%;
             overflow: hidden;
-            margin: 12px 0;
+            margin: 10px 0;
         }
 
         .progress-bar-fill {
@@ -104,15 +132,52 @@
             transition: width 0.3s;
         }
 
-        input {
+        input, textarea {
             width: 100%;
             padding: 10px;
             background: #18181b;
             border: 1px solid var(--border-color);
             color: #fff;
-            border-radius: 4px;
-            margin-bottom: 12px;
+            border-radius: 6px;
+            margin-bottom: 10px;
             box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .accordion-btn {
+            background-color: #1c1c24;
+            color: var(--text-main);
+            cursor: pointer;
+            padding: 12px;
+            width: 100%;
+            text-align: left;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .accordion-content {
+            padding: 12px;
+            display: none;
+            background-color: #111116;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 8px;
+        }
+
+        canvas {
+            width: 100%;
+            height: 160px;
+            background: #0d0d11;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-top: 6px;
         }
 
         nav {
@@ -125,6 +190,8 @@
             display: flex;
             justify-content: space-around;
             padding: 10px 0;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
         .nav-item {
@@ -142,77 +209,213 @@
             color: var(--accent-green);
             font-weight: bold;
         }
+
+        .munger-card {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            background: #181820;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #2e2e38;
+        }
+
+        .munger-icon {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #27272a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid var(--accent-amber);
+        }
     </style>
 </head>
 <body>
 
     <header>
         <p class="title">SIN CAER EN LA IDIOTEZ</p>
-        <div class="status-badge">● SISTEMA LOCAL VERIFICADO & AUDITADO</div>
+        <div class="status-badge">● TERMINAL LOCAL AUDITADA V1.0</div>
     </header>
 
     <div class="main-container">
         
-        <!-- PESTAÑA 1: CHECK-IN & RACHA -->
+        <!-- PESTAÑA 1: 🔥 RACHA & CHECK-IN -->
         <div id="tab1" class="tab-content active">
-            <div class="card">
-                <p style="font-size: 0.85rem; color: #d97706; margin-top:0;">"El acecho paciente vence a la fuerza desmedida. Mantén tu posición."</p>
-            </div>
-
             <div class="card" style="text-align: center;">
-                <span style="font-size:0.8rem; color:var(--text-muted);">RACHA DE SOBRIEDAD</span>
+                <div class="gato-avatar-box" id="gatoAvatar">
+                    <svg viewBox="0 0 100 100" width="100%" height="100%">
+                        <polygon points="20,35 32,10 45,30" fill="#f59e0b" />
+                        <polygon points="80,35 68,10 55,30" fill="#f59e0b" />
+                        <circle cx="50" cy="50" r="35" fill="#1e1e24" stroke="#f59e0b" stroke-width="3"/>
+                        <circle cx="38" cy="45" r="5" fill="#10b981"/>
+                        <circle cx="62" cy="45" r="5" fill="#10b981"/>
+                        <polygon points="50,52 46,57 54,57" fill="#ef4444"/>
+                        <path id="bocaGato" d="M 42 62 Q 50 67 58 62" stroke="#e2e8f0" stroke-width="2" fill="none"/>
+                        <line x1="20" y1="48" x2="33" y2="50" stroke="#94a3b8" stroke-width="1.5"/>
+                        <line x1="18" y1="56" x2="33" y2="54" stroke="#94a3b8" stroke-width="1.5"/>
+                        <line x1="80" y1="48" x2="67" y2="50" stroke="#94a3b8" stroke-width="1.5"/>
+                        <line x1="82" y1="56" x2="67" y2="54" stroke="#94a3b8" stroke-width="1.5"/>
+                    </svg>
+                </div>
+                <span style="font-size:0.75rem; color:var(--text-muted);">RACHA DE SOBRIEDAD</span>
                 <div class="metric-big" id="streakVal">0</div>
-                <span style="font-size:0.75rem; color:var(--text-muted);">DÍAS DE CONTROL PATRIMONIAL</span>
+                <span style="font-size:0.7rem; color:var(--text-muted);" id="gatoStatusText">MANTÉN TU POSICIÓN</span>
             </div>
 
             <div class="card">
-                <p style="text-align: center; margin-top:0;">¿Respetaste tu presupuesto diario hoy?</p>
-                <button class="btn btn-green" onclick="doCheckIn(true)">SÍ, PROTEGIDO</button>
-                <button class="btn btn-red" onclick="doCheckIn(false)">NO</button>
+                <p style="margin-top:0; font-size:0.85rem; font-weight:bold;">CHECK-IN DIARIO OPERATIVO</p>
+                <label style="font-size:0.75rem;">Gasto Total de Hoy ($):</label>
+                <input type="number" id="inputGastoHoy" placeholder="Ej: 12000">
+                
+                <label style="font-size:0.75rem;">Detalle Libre (Micro-gastos):</label>
+                <textarea id="inputDetalleHoy" rows="2" placeholder="Ej: 5000 jugo y pan, 7000 carga bip"></textarea>
+
+                <button class="btn btn-green" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO ($Í)</button>
+                <button class="btn btn-red" onclick="doCheckIn(false)">ME PASÉ DEL LÍMITE (NO)</button>
+            </div>
+
+            <!-- ACORDEÓN 1: EL ANCLA DE MUNGER -->
+            <button class="accordion-btn" onclick="toggleAccordion('accMunger')">
+                <span>🏛️ EL ANCLA DE CHARLIE MUNGER</span> <span>▼</span>
+            </button>
+            <div id="accMunger" class="accordion-content">
+                <div class="munger-card">
+                    <div class="munger-icon">
+                        <svg viewBox="0 0 50 50" width="30" height="30">
+                            <circle cx="16" cy="25" r="9" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                            <circle cx="34" cy="25" r="9" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                            <line x1="25" y1="25" x2="25" y2="25" stroke="#f59e0b" stroke-width="3"/>
+                            <line x1="7" y1="23" x2="2" y2="20" stroke="#f59e0b" stroke-width="2"/>
+                            <line x1="43" y1="23" x2="48" y2="20" stroke="#f59e0b" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <p style="font-size:0.8rem; color:#f59e0b; font-style:italic; margin:0;" id="mungerQuote">"Cargando sabiduría..."</p>
+                        <p style="font-size:0.65rem; color:var(--text-muted); margin:4px 0 0 0; text-align:right;">— Charlie Munger</p>
+                    </div>
+                </div>
+                <button class="btn btn-blue" style="font-size:0.7rem; padding:6px; margin-top:10px;" onclick="nextMungerQuote()">OTRA FRASE</button>
+            </div>
+
+            <!-- ACORDEÓN 2: PUESTA AL DÍA -->
+            <button class="accordion-btn" onclick="toggleAccordion('accPuestaAlDia')">
+                <span>🗓️ VERIFICAR DÍAS PENDIENTES</span> <span>▼</span>
+            </button>
+            <div id="accPuestaAlDia" class="accordion-content">
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0;">Si olvidaste registrar días anteriores, ingresa la fecha y el gasto aquí:</p>
+                <input type="date" id="inputFechaPendiente">
+                <input type="number" id="inputGastoPendiente" placeholder="Gasto real de ese día ($)">
+                <button class="btn btn-amber" onclick="registrarDiaPendiente()">REGISTRAR DÍA HISTÓRICO</button>
             </div>
         </div>
 
-        <!-- PESTAÑA 2: GOAL / BABY STEP 3 -->
+        <!-- PESTAÑA 2: 🎯 BABY STEP 3 -->
         <div id="tab2" class="tab-content">
             <div class="card">
-                <h3 style="margin-top:0; color:#f59e0b;">OBJETIVO: BABY STEP 3</h3>
-                <p style="font-size:0.8rem; color:var(--text-muted);">Fondo de Emergencia Fijo / 6 Meses.</p>
+                <h3 style="margin-top:0; color:var(--accent-amber); font-size:1rem;">OBJETIVO: BABY STEP 3</h3>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-4px;">Fondo de Emergencia de 6 Meses.</p>
                 
                 <div class="progress-bar-bg">
                     <div id="goalProgress" class="progress-bar-fill"></div>
                 </div>
 
-                <p style="font-size:0.9rem;">Progreso: <strong id="pctVal">0%</strong></p>
-                <p style="font-size:0.85rem;">Monto Ahorrado Actual: <strong id="currentSaved">$0</strong></p>
-                <p style="font-size:0.85rem;">Meta Total: <strong id="targetVal">$0</strong></p>
-                <p style="font-size:0.85rem;">Falta para la Meta: <strong id="remainingVal">$0</strong></p>
+                <p style="font-size:0.85rem;">Progreso Total: <strong id="pctVal">0%</strong></p>
+                <p style="font-size:0.8rem;">Ahorro Actual: <strong id="currentSaved">$0</strong></p>
+                <p style="font-size:0.8rem;">Meta Declarada: <strong id="targetVal">$0</strong></p>
+                <p style="font-size:0.8rem;">Monto Faltante: <strong id="remainingVal">$0</strong></p>
                 <hr style="border-color:var(--border-color);">
-                <p style="font-size:0.85rem; color:var(--accent-green);">Payslips (Quincenas) Restantes: <strong id="payslipsVal">0</strong></p>
-                <p style="font-size:0.85rem; color:#f59e0b;">Fecha Estimada de Cumplimiento: <br><strong id="targetDateVal">Sin definir</strong></p>
+                <p style="font-size:0.8rem; color:var(--accent-green);">Payslips (Quincenas) Restantes: <strong id="payslipsVal">0</strong></p>
+                <p style="font-size:0.8rem; color:var(--accent-amber);">Fecha Estimada: <br><strong id="targetDateVal">Sin definir</strong></p>
             </div>
         </div>
 
-        <!-- PESTAÑA 3: CONFIGURACIÓN FINANCIERA -->
+        <!-- PESTAÑA 3: 📈 TERMINAL EQUITY & DELTAS -->
         <div id="tab3" class="tab-content">
             <div class="card">
-                <h3 style="margin-top:0;">PARÁMETROS Y CONFIGURACIÓN</h3>
+                <h4 style="margin:0 0 6px 0; font-size:0.9rem;">EQUITY CURVE HISTÓRICA COMPLETA</h4>
+                <canvas id="chartCanvas"></canvas>
+                <p style="font-size:0.7rem; color:var(--text-muted); margin-top:6px;" id="chartStats">Sin suficientes datos.</p>
+            </div>
+
+            <!-- ACORDEÓN 1: TERMINAL DE DELTAS -->
+            <button class="accordion-btn" onclick="toggleAccordion('accDeltas')">
+                <span>📊 TERMINAL DE DELTAS (ÚLTIMOS PERIODOS)</span> <span>▼</span>
+            </button>
+            <div id="accDeltas" class="accordion-content">
+                <p style="font-size:0.75rem; margin-top:0;">Deltas de Ahorro Neto:</p>
+                <div id="deltasContainer" style="font-size:0.75rem;">Sin periodos cerrados.</div>
+            </div>
+
+            <!-- ACORDEÓN 2: BITÁCORA DE CAÍDAS -->
+            <button class="accordion-btn" onclick="toggleAccordion('accCaidas')">
+                <span>🚨 REGISTRAR EXTRACCIÓN O CAÍDA</span> <span>▼</span>
+            </button>
+            <div id="accCaidas" class="accordion-content">
+                <label style="font-size:0.75rem;">Monto Retirado de Ahorros ($):</label>
+                <input type="number" id="inputMontoCaida" placeholder="Ej: 50000">
+                <label style="font-size:0.75rem;">Motivo / Destino de la Caída:</label>
+                <input type="text" id="inputMotivoCaida" placeholder="Ej: Impulso, Emergencia">
+                <button class="btn btn-red" onclick="registrarCaida()">REGISTRAR RETIRO EN BITÁCORA</button>
+            </div>
+
+            <!-- ACORDEÓN 3: HISTORIAL COMPLETO -->
+            <button class="accordion-btn" onclick="toggleAccordion('accHistorial')">
+                <span>📜 HISTORIAL COMPLETO DE REGISTROS</span> <span>▼</span>
+            </button>
+            <div id="accHistorial" class="accordion-content">
+                <div id="historyLogContainer" style="font-size:0.7rem; max-height:150px; overflow-y:auto;">Sin registros.</div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 4: ⚙️ PAYSLIP & AJUSTES -->
+        <div id="tab4" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0; font-size:1rem; color:var(--accent-blue);">CIERRE Y APERTURA DE PAYSLIP</h3>
+                <p style="font-size:0.75rem; color:var(--text-muted);" id="payslipStatusMsg">Ciclo activo.</p>
                 
-                <label style="font-size:0.8rem;">Meta Total Deseada ($) [Opcional si usas gastos]:</label>
-                <input type="number" id="inputMeta" placeholder="Ej: 3600000">
+                <p style="font-size:0.8rem; margin-bottom:4px;">Excedente Neto Acumulado: <strong id="excedenteQuincenalVal">$0</strong></p>
+                <button class="btn btn-green" onclick="ejecutarRitualCierre()">EJECUTAR RITUAL DE CIERRE</button>
+            </div>
 
-                <label style="font-size:0.8rem;">Gastos Fijos Mensuales ($):</label>
-                <input type="number" id="inputGastos" placeholder="Ej: 600000">
+            <!-- ACORDEÓN 1: PARÁMETROS BASE -->
+            <button class="accordion-btn" onclick="toggleAccordion('accParams')">
+                <span>🛠️ PARÁMETROS FINANCIEROS BASE</span> <span>▼</span>
+            </button>
+            <div id="accParams" class="accordion-content">
+                <label style="font-size:0.75rem;">Meta Total Deseada ($):</label>
+                <input type="number" id="inputMeta">
+                <label style="font-size:0.75rem;">Gastos Fijos Mensuales ($):</label>
+                <input type="number" id="inputGastos">
+                <label style="font-size:0.75rem;">Ahorro Base por Payslip ($):</label>
+                <input type="number" id="inputAhorroQuincenal">
+                <label style="font-size:0.75rem;">Presupuesto Diario Objetivo ($):</label>
+                <input type="number" id="inputPresupuestoDiario">
+                <button class="btn btn-blue" onclick="saveParams()">GUARDAR PARÁMETROS</button>
+            </div>
 
-                <label style="font-size:0.8rem;">Monto Ahorrado Actual ($):</label>
-                <input type="number" id="inputAhorro" placeholder="Ej: 500000">
-
-                <label style="font-size:0.8rem;">Ahorro Estimado por Payslip ($):</label>
-                <input type="number" id="inputAhorroQuincenal" placeholder="Ej: 250000">
-
-                <label style="font-size:0.8rem;">Fecha del Próximo Payslip/Pago:</label>
+            <!-- ACORDEÓN 2: OVERRIDE DE FECHA -->
+            <button class="accordion-btn" onclick="toggleAccordion('accOverride')">
+                <span>📅 AJUSTAR FECHA PRÓXIMO PAGO</span> <span>▼</span>
+            </button>
+            <div id="accOverride" class="accordion-content">
+                <label style="font-size:0.75rem;">Fecha del Próximo Payslip:</label>
                 <input type="date" id="inputFechaPago">
+                <button class="btn btn-blue" onclick="saveFechaPago()">ACTUALIZAR FECHA</button>
+            </div>
 
-                <button class="btn btn-green" onclick="saveParams()">GUARDAR Y RECALCULAR</button>
+            <!-- ACORDEÓN 3: COPIA DE SEGURIDAD -->
+            <button class="accordion-btn" onclick="toggleAccordion('accBackup')">
+                <span>💾 COPIA DE SEGURIDAD LOCAL</span> <span>▼</span>
+            </button>
+            <div id="accBackup" class="accordion-content">
+                <button class="btn btn-blue" onclick="exportarBackup()">EXPORTAR BACKUP (JSON)</button>
+                <div style="margin-top:10px;">
+                    <label style="font-size:0.75rem;">Importar Backup (JSON):</label>
+                    <input type="file" id="inputImportBackup" accept=".json" onchange="importarBackup(event)">
+                </div>
             </div>
         </div>
 
@@ -220,33 +423,100 @@
 
     <nav>
         <button class="nav-item active" onclick="switchTab(1)">
-            <span>🔥</span>
-            <span>Racha</span>
+            <span>🔥</span><span>Racha</span>
         </button>
         <button class="nav-item" onclick="switchTab(2)">
-            <span>🎯</span>
-            <span>Baby Step 3</span>
+            <span>🎯</span><span>BS3</span>
         </button>
         <button class="nav-item" onclick="switchTab(3)">
-            <span>⚙️</span>
-            <span>Finanzas</span>
+            <span>📈</span><span>Equity</span>
+        </button>
+        <button class="nav-item" onclick="switchTab(4)">
+            <span>⚙️</span><span>Payslip</span>
         </button>
     </nav>
 
     <script>
+        const MUNGER_QUOTES = [
+            "El gran dinero no está en la compra o la venta, sino en la espera.",
+            "La gente quiere hacerse rica rápido. Es muy difícil convencer a alguien de que se vuelva rico despacio.",
+            "Saber lo que no sabes es más útil que ser brillante.",
+            "La primera regla de la acumulación es nunca interrumpirla innecesariamente.",
+            "Se requiere una gran cantidad de aburrimiento para lograr el éxito a largo plazo.",
+            "Reconocer tu propia ignorancia es el comienzo de la sabiduría.",
+            "Toma una idea simple y tómala en serio.",
+            "El hábito de postergar la gratificación es la herramienta definitiva para la libertad.",
+            "No hay nada que enseñe mejor que la amargura de un error registrado con honestidad.",
+            "Es sorprendente la ventaja que obtienen las personas que simplemente intentan no ser estúpidas."
+        ];
+
         let state = JSON.parse(localStorage.getItem('gato_state')) || {
             streak: 0,
             metaExplicit: 0,
             gastosMensuales: 0,
             ahorroCurrent: 0,
             ahorroPayslip: 0,
-            fechaPrimerPago: ''
+            presupuestoDiario: 0,
+            fechaPrimerPago: '',
+            excedenteQuincenal: 0,
+            mungerDeck: [],
+            dailyLogs: [],
+            history: [],
+            deltas: []
         };
+
+        function setGatoEmotion(emotion) {
+            let boca = document.getElementById('bocaGato');
+            let box = document.getElementById('gatoAvatar');
+            let txt = document.getElementById('gatoStatusText');
+            if (!boca || !box) return;
+
+            box.classList.remove('celebrate');
+
+            if (emotion === 'happy') {
+                boca.setAttribute('d', 'M 40 60 Q 50 72 60 60');
+                box.classList.add('celebrate');
+                if (txt) txt.innerText = "¡GRAN PASO PATRIMONIAL!";
+            } else if (emotion === 'sad') {
+                boca.setAttribute('d', 'M 40 66 Q 50 56 60 66');
+                if (txt) txt.innerText = "SISTEMA EN RECUPERACIÓN";
+            } else {
+                boca.setAttribute('d', 'M 42 62 Q 50 67 58 62');
+                if (txt) txt.innerText = "MANTÉN TU POSICIÓN";
+            }
+        }
+
+        function toggleAccordion(id) {
+            let el = document.getElementById(id);
+            el.style.display = (el.style.display === "block") ? "none" : "block";
+        }
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab' + num).classList.add('active');
+            document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
+
+            if (num === 3) setTimeout(drawChart, 100);
+        }
+
+        function getNextMungerQuote() {
+            if (!state.mungerDeck || state.mungerDeck.length === 0) {
+                state.mungerDeck = Array.from(Array(MUNGER_QUOTES.length).keys()).sort(() => Math.random() - 0.5);
+            }
+            let idx = state.mungerDeck.pop();
+            localStorage.setItem('gato_state', JSON.stringify(state));
+            return MUNGER_QUOTES[idx];
+        }
+
+        function nextMungerQuote() {
+            document.getElementById('mungerQuote').innerText = `"${getNextMungerQuote()}"`;
+        }
 
         function updateUI() {
             document.getElementById('streakVal').innerText = state.streak;
             
-            // Lógica Pestaña 2
             let target = state.metaExplicit > 0 ? state.metaExplicit : (state.gastosMensuales * 6);
             let current = state.ahorroCurrent || 0;
             let remaining = Math.max(0, target - current);
@@ -257,16 +527,12 @@
 
             if (state.ahorroPayslip > 0 && remaining > 0) {
                 payslipsNeeded = Math.ceil(remaining / state.ahorroPayslip);
-                
                 if (state.fechaPrimerPago) {
                     let firstPayDate = new Date(state.fechaPrimerPago + "T00:00:00");
                     if (!isNaN(firstPayDate.getTime())) {
                         let finalDate = new Date(firstPayDate.getTime());
-                        // Cada payslip posterior ocurre a los 14 días
                         finalDate.setDate(finalDate.getDate() + ((payslipsNeeded - 1) * 14));
-                        
-                        let options = { year: 'numeric', month: 'long', day: 'numeric' };
-                        targetDateStr = finalDate.toLocaleDateString('es-ES', options);
+                        targetDateStr = finalDate.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
                     }
                 }
             } else if (remaining === 0 && target > 0) {
@@ -281,44 +547,246 @@
             document.getElementById('payslipsVal').innerText = payslipsNeeded;
             document.getElementById('targetDateVal').innerText = targetDateStr;
 
-            // Formulario Pestaña 3
+            document.getElementById('excedenteQuincenalVal').innerText = '$' + (state.excedenteQuincenal || 0).toLocaleString();
+
             document.getElementById('inputMeta').value = state.metaExplicit || '';
             document.getElementById('inputGastos').value = state.gastosMensuales || '';
-            document.getElementById('inputAhorro').value = state.ahorroCurrent || '';
             document.getElementById('inputAhorroQuincenal').value = state.ahorroPayslip || '';
+            document.getElementById('inputPresupuestoDiario').value = state.presupuestoDiario || '';
             document.getElementById('inputFechaPago').value = state.fechaPrimerPago || '';
-        }
 
-        function switchTab(num) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById('tab' + num).classList.add('active');
-            document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
+            if (state.streak > 0) {
+                setGatoEmotion('happy');
+            } else if (state.history && state.history.length > 0 && state.history[state.history.length - 1].type === 'CAIDA') {
+                setGatoEmotion('sad');
+            } else {
+                setGatoEmotion('neutral');
+            }
+
+            renderHistoryLogs();
+            renderDeltas();
+            drawChart();
         }
 
         function doCheckIn(success) {
+            let spent = Number(document.getElementById('inputGastoHoy').value) || 0;
+            let detail = document.getElementById('inputDetalleHoy').value || '';
+            let today = new Date().toISOString().split('T')[0];
+
+            if (!state.dailyLogs) state.dailyLogs = [];
+            state.dailyLogs.push({ date: today, spent: spent, detail: detail });
+
+            let limit = state.presupuestoDiario || 0;
+            if (limit > 0) {
+                let diff = limit - spent;
+                state.excedenteQuincenal = (state.excedenteQuincenal || 0) + diff;
+            }
+
             if (success) {
                 state.streak += 1;
+                setGatoEmotion('happy');
             } else {
                 state.streak = 0;
+                setGatoEmotion('sad');
             }
+
+            localStorage.setItem('gato_state', JSON.stringify(state));
+            document.getElementById('inputGastoHoy').value = '';
+            document.getElementById('inputDetalleHoy').value = '';
+            updateUI();
+            alert('Check-in registrado correctamente.');
+        }
+
+        function registrarDiaPendiente() {
+            let fecha = document.getElementById('inputFechaPendiente').value;
+            let gasto = Number(document.getElementById('inputGastoPendiente').value) || 0;
+            if (!fecha) return alert('Selecciona una fecha válida.');
+
+            if (!state.dailyLogs) state.dailyLogs = [];
+            state.dailyLogs.push({ date: fecha, spent: gasto, detail: 'Puesta al día histórica' });
+
+            let limit = state.presupuestoDiario || 0;
+            if (limit > 0) {
+                state.excedenteQuincenal = (state.excedenteQuincenal || 0) + (limit - gasto);
+            }
+
             localStorage.setItem('gato_state', JSON.stringify(state));
             updateUI();
+            alert('Día histórico registrado.');
+        }
+
+        function registrarCaida() {
+            let monto = Number(document.getElementById('inputMontoCaida').value);
+            let motivo = document.getElementById('inputMotivoCaida').value || 'Sin motivo especificado';
+            if (!monto || monto <= 0) return alert('Ingresa un monto válido.');
+
+            state.ahorroCurrent = Math.max(0, (state.ahorroCurrent || 0) - monto);
+            state.streak = 0;
+            setGatoEmotion('sad');
+
+            let today = new Date().toISOString().split('T')[0];
+            if (!state.history) state.history = [];
+            state.history.push({ date: today, balance: state.ahorroCurrent, type: 'CAIDA', note: motivo });
+
+            localStorage.setItem('gato_state', JSON.stringify(state));
+            document.getElementById('inputMontoCaida').value = '';
+            document.getElementById('inputMotivoCaida').value = '';
+            updateUI();
+            alert('Retiro registrado en la Bitácora.');
+        }
+
+        function ejecutarRitualCierre() {
+            let exc = state.excedenteQuincenal || 0;
+            let confirm = window.confirm(`Cierre de Quincena:\nExcedente neto a transferir: $${exc.toLocaleString()}.\n\n¿Ya realizaste la transferencia bancaria real a tu cuenta de ahorro?`);
+            
+            if (confirm) {
+                let base = state.ahorroPayslip || 0;
+                let totalAdd = base + exc;
+                state.ahorroCurrent = (state.ahorroCurrent || 0) + totalAdd;
+
+                let today = new Date().toISOString().split('T')[0];
+                if (!state.history) state.history = [];
+                state.history.push({ date: today, balance: state.ahorroCurrent, type: 'PAYSLIP', note: `Ahorro base $${base} + Excedente $${exc}` });
+
+                state.excedenteQuincenal = 0;
+
+                if (state.fechaPrimerPago) {
+                    let d = new Date(state.fechaPrimerPago + "T00:00:00");
+                    d.setDate(d.getDate() + 14);
+                    state.fechaPrimerPago = d.toISOString().split('T')[0];
+                }
+
+                setGatoEmotion('happy');
+                localStorage.setItem('gato_state', JSON.stringify(state));
+                updateUI();
+                alert('¡Ciclo cerrado con éxito! Nuevo periodo iniciado.');
+            } else {
+                setGatoEmotion('sad');
+                alert('GATO COLOCOLO: Mantén tu posición. Haz la transferencia en tu banco y vuelve a confirmar.');
+            }
         }
 
         function saveParams() {
             state.metaExplicit = Number(document.getElementById('inputMeta').value);
             state.gastosMensuales = Number(document.getElementById('inputGastos').value);
-            state.ahorroCurrent = Number(document.getElementById('inputAhorro').value);
             state.ahorroPayslip = Number(document.getElementById('inputAhorroQuincenal').value);
-            state.fechaPrimerPago = document.getElementById('inputFechaPago').value;
+            state.presupuestoDiario = Number(document.getElementById('inputPresupuestoDiario').value);
             
             localStorage.setItem('gato_state', JSON.stringify(state));
             updateUI();
-            alert('Parámetros guardados correctamente.');
+            alert('Parámetros guardados.');
         }
 
+        function saveFechaPago() {
+            state.fechaPrimerPago = document.getElementById('inputFechaPago').value;
+            localStorage.setItem('gato_state', JSON.stringify(state));
+            updateUI();
+            alert('Fecha de pago actualizada.');
+        }
+
+        function drawChart() {
+            let canvas = document.getElementById('chartCanvas');
+            if (!canvas) return;
+            let ctx = canvas.getContext('2d');
+            canvas.width = canvas.clientWidth || 300;
+            canvas.height = canvas.clientHeight || 160;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let hist = state.history || [];
+            if (hist.length < 2) {
+                document.getElementById('chartStats').innerText = "Insuficientes datos para la Equity Curve.";
+                return;
+            }
+
+            let balances = hist.map(h => h.balance);
+            let min = Math.min(...balances);
+            let max = Math.max(...balances);
+            if (min === max) { max = min + 1; }
+
+            let padding = 15;
+            let w = canvas.width - (padding * 2);
+            let h = canvas.height - (padding * 2);
+
+            ctx.beginPath();
+            ctx.lineWidth = 2;
+            let lastVal = balances[balances.length - 1];
+            let prevVal = balances[balances.length - 2];
+            ctx.strokeStyle = lastVal >= prevVal ? "#10b981" : "#ef4444";
+
+            hist.forEach((pt, idx) => {
+                let x = padding + (idx / (hist.length - 1)) * w;
+                let y = (canvas.height - padding) - ((pt.balance - min) / (max - min)) * h;
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+
+            ctx.stroke();
+            document.getElementById('chartStats').innerText = `Puntos registrados: ${hist.length} | Balance Actual: $${lastVal.toLocaleString()}`;
+        }
+
+        function renderHistoryLogs() {
+            let container = document.getElementById('historyLogContainer');
+            if (!container) return;
+            let hist = state.history || [];
+            if (hist.length === 0) {
+                container.innerHTML = "Sin registros.";
+                return;
+            }
+            let html = "";
+            hist.slice().reverse().forEach(item => {
+                let color = item.type === 'CAIDA' ? 'var(--accent-red)' : 'var(--accent-green)';
+                html += `<div style="border-bottom:1px solid #27272a; padding:4px 0;">
+                    <span style="color:${color}; font-weight:bold;">[${item.type}]</span> ${item.date} - $${item.balance.toLocaleString()}<br>
+                    <span style="color:var(--text-muted);">${item.note}</span>
+                </div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderDeltas() {
+            let container = document.getElementById('deltasContainer');
+            if (!container) return;
+            let hist = state.history || [];
+            if (hist.length < 2) {
+                container.innerHTML = "Se requieren al menos 2 ciclos cerrados para calcular Deltas.";
+                return;
+            }
+            let html = "";
+            for (let i = Math.max(1, hist.length - 6); i < hist.length; i++) {
+                let diff = hist[i].balance - hist[i-1].balance;
+                let color = diff >= 0 ? "var(--accent-green)" : "var(--accent-red)";
+                html += `<div>${hist[i].date}: <strong style="color:${color}">${diff >= 0 ? '+' : ''}$${diff.toLocaleString()}</strong></div>`;
+            }
+            container.innerHTML = html;
+        }
+
+        function exportarBackup() {
+            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+            let dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `gato_colocolo_backup_${new Date().toISOString().split('T')[0]}.json`);
+            dlAnchorElem.click();
+        }
+
+        function importarBackup(event) {
+            let reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let imported = JSON.parse(e.target.result);
+                    if (imported && typeof imported === 'object') {
+                        state = imported;
+                        localStorage.setItem('gato_state', JSON.stringify(state));
+                        updateUI();
+                        alert('Backup importado correctamente.');
+                    }
+                } catch(err) {
+                    alert('Error al leer el archivo JSON.');
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+
+        document.getElementById('mungerQuote').innerText = `"${getNextMungerQuote()}"`;
         updateUI();
     </script>
 </body>
