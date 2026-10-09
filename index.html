@@ -90,6 +90,18 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
+        .banner-alert {
+            background-color: #451a03;
+            border: 1px solid var(--accent-amber);
+            color: #fef3c7;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            font-size: 0.8rem;
+            display: none;
+            cursor: pointer;
+        }
+
         .metric-big {
             font-size: 2.6rem;
             font-weight: bold;
@@ -242,6 +254,11 @@
 
     <div class="main-container">
         
+        <!-- BANNER ALERTA DÍAS PENDIENTES -->
+        <div id="pendingBanner" class="banner-alert" onclick="openPuestaAlDiaAuto()">
+            ⚠️ <strong>¡ATENCIÓN!</strong> Tienes el registro de ayer pendiente. Toca aquí para ingresarlo de inmediato.
+        </div>
+
         <!-- PESTAÑA 1: 🔥 RACHA & CHECK-IN -->
         <div id="tab1" class="tab-content active">
             <div class="card" style="text-align: center;">
@@ -301,7 +318,7 @@
             </div>
 
             <!-- ACORDEÓN 2: PUESTA AL DÍA -->
-            <button class="accordion-btn" onclick="toggleAccordion('accPuestaAlDia')">
+            <button class="accordion-btn" id="btnAccPuestaAlDia" onclick="toggleAccordion('accPuestaAlDia')">
                 <span>🗓️ VERIFICAR DÍAS PENDIENTES</span> <span>▼</span>
             </button>
             <div id="accPuestaAlDia" class="accordion-content">
@@ -406,11 +423,13 @@
                 <button class="btn btn-blue" onclick="saveFechaPago()">ACTUALIZAR FECHA</button>
             </div>
 
-            <!-- ACORDEÓN 3: COPIA DE SEGURIDAD -->
+            <!-- ACORDEÓN 3: NOTIFICACIONES Y BACKUP -->
             <button class="accordion-btn" onclick="toggleAccordion('accBackup')">
-                <span>💾 COPIA DE SEGURIDAD LOCAL</span> <span>▼</span>
+                <span>🔔 ALERTAS Y COPIA DE SEGURIDAD</span> <span>▼</span>
             </button>
             <div id="accBackup" class="accordion-content">
+                <button class="btn btn-amber" onclick="requestNotificationPermission()">ACTIVAR RECORDATORIO DIARIO (21:30 HRS)</button>
+                <hr style="border-color:var(--border-color); margin:12px 0;">
                 <button class="btn btn-blue" onclick="exportarBackup()">EXPORTAR BACKUP (JSON)</button>
                 <div style="margin-top:10px;">
                     <label style="font-size:0.75rem;">Importar Backup (JSON):</label>
@@ -491,6 +510,13 @@
             el.style.display = (el.style.display === "block") ? "none" : "block";
         }
 
+        function openPuestaAlDiaAuto() {
+            let el = document.getElementById('accPuestaAlDia');
+            el.style.display = "block";
+            let btn = document.getElementById('btnAccPuestaAlDia');
+            if (btn) btn.scrollIntoView({ behavior: 'smooth' });
+        }
+
         function switchTab(num) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
@@ -512,6 +538,23 @@
 
         function nextMungerQuote() {
             document.getElementById('mungerQuote').innerText = `"${getNextMungerQuote()}"`;
+        }
+
+        function checkPendingDays() {
+            let yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            let yesterdayStr = yesterday.toISOString().split('T')[0];
+
+            let logs = state.dailyLogs || [];
+            let hasYesterday = logs.some(l => l.date === yesterdayStr);
+
+            let banner = document.getElementById('pendingBanner');
+            if (!hasYesterday && state.dailyLogs && state.dailyLogs.length > 0) {
+                banner.style.display = 'block';
+                document.getElementById('inputFechaPendiente').value = yesterdayStr;
+            } else {
+                banner.style.display = 'none';
+            }
         }
 
         function updateUI() {
@@ -563,6 +606,7 @@
                 setGatoEmotion('neutral');
             }
 
+            checkPendingDays();
             renderHistoryLogs();
             renderDeltas();
             drawChart();
@@ -760,6 +804,38 @@
             container.innerHTML = html;
         }
 
+        function requestNotificationPermission() {
+            if ("Notification" in window) {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        alert("Notificaciones activadas. Recibirás un recordatorio diario a las 21:30 hrs.");
+                        scheduleDailyNotification();
+                    } else {
+                        alert("Permiso denegado. Puedes activarlo desde la configuración del navegador.");
+                    }
+                });
+            } else {
+                alert("Tu navegador no soporta notificaciones locales.");
+            }
+        }
+
+        function scheduleDailyNotification() {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+            let now = new Date();
+            let target = new Date();
+            target.setHours(21, 30, 0, 0);
+            if (now > target) {
+                target.setDate(target.getDate() + 1);
+            }
+            let diff = target - now;
+            setTimeout(() => {
+                new Notification("🐱 Gato Colocolo", {
+                    body: "Hora de cerrar el día. Registra tu gasto diario antes de dormir."
+                });
+                scheduleDailyNotification();
+            }, diff);
+        }
+
         function exportarBackup() {
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
             let dlAnchorElem = document.createElement('a');
@@ -788,6 +864,9 @@
 
         document.getElementById('mungerQuote').innerText = `"${getNextMungerQuote()}"`;
         updateUI();
+        if ("Notification" in window && Notification.permission === "granted") {
+            scheduleDailyNotification();
+        }
     </script>
 </body>
 </html>
