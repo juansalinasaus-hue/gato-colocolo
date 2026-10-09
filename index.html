@@ -1,438 +1,325 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <meta name="theme-color" content="#0d1117">
-  <title>Gato Colocolo - Sobriedad Financiera</title>
-  <style>
-    :root {
-      --bg-color: #0d1117;
-      --card-bg: #161b22;
-      --border-color: #30363d;
-      --accent-green: #2ea043;
-      --accent-red: #da3633;
-      --accent-gold: #d29922;
-      --text-main: #f0f6fc;
-      --text-muted: #8b949e;
-      --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gato Colocolo - Sobriedad Financiera</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --card-bg: #131318;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #e2e8f0;
+            --text-muted: #94a3b8;
+            --border-color: #27272a;
+        }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      font-family: var(--font-family);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: monospace, system-ui, -apple-system;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
 
-    header {
-      padding: 12px 15px;
-      text-align: center;
-      border-bottom: 2px solid var(--border-color);
-      background: var(--card-bg);
-    }
-    header h1 { font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent-gold); }
-    header p { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
-    .status-badge { font-size: 0.65rem; color: var(--accent-green); margin-top: 4px; font-weight: bold; }
+        header {
+            padding: 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
 
-    main { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; }
-    .screen { display: none; flex-direction: column; gap: 15px; }
-    .screen.active { display: flex; }
+        .title {
+            color: #f59e0b;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin: 0;
+        }
 
-    .card {
-      background: var(--card-bg);
-      border: 2px solid var(--border-color);
-      border-radius: 12px;
-      padding: 15px;
-      box-shadow: 0 4px 0 var(--border-color);
-    }
-    
-    .btn {
-      width: 100%;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-weight: bold;
-      font-size: 0.95rem;
-      cursor: pointer;
-      text-transform: uppercase;
-      transition: transform 0.1s, box-shadow 0.1s;
-    }
-    .btn-green { background: var(--accent-green); color: #fff; box-shadow: 0 4px 0 #238636; }
-    .btn-red { background: var(--accent-red); color: #fff; box-shadow: 0 4px 0 #b62324; }
-    .btn-disabled { background: #21262d; color: var(--text-muted); box-shadow: none; cursor: not-allowed; }
-    .btn:active:not(.btn-disabled) { transform: translateY(3px); box-shadow: none; }
+        .status-badge {
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            margin-top: 4px;
+        }
 
-    .mascot-box { display: flex; align-items: center; gap: 12px; }
-    .mascot-avatar {
-      width: 55px; height: 55px; border-radius: 50%; background: #21262d;
-      border: 2px solid var(--accent-gold); display: flex; align-items: center; justify-content: center; font-size: 1.8rem;
-      flex-shrink: 0;
-    }
-    .speech-bubble {
-      background: #21262d; padding: 10px; border-radius: 8px; font-size: 0.8rem;
-      border: 1px solid var(--border-color); flex: 1; line-height: 1.3;
-    }
+        .main-container {
+            flex: 1;
+            padding: 16px;
+            padding-bottom: 80px;
+        }
 
-    .counter-box { text-align: center; padding: 20px 15px; }
-    .counter-number { font-size: 3.5rem; font-weight: 900; color: var(--accent-green); line-height: 1; }
-    
-    .progress-bar-container { background: #21262d; border-radius: 8px; height: 14px; overflow: hidden; border: 1px solid var(--border-color); }
-    .progress-bar { background: var(--accent-gold); height: 100%; width: 0%; transition: width 0.4s ease; }
+        .tab-content {
+            display: none;
+        }
 
-    .field-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
-    .field-group label { font-size: 0.75rem; color: var(--text-muted); }
-    .field-group input {
-      background: #0d1117; border: 1px solid var(--border-color); color: #fff;
-      padding: 10px; border-radius: 6px; font-size: 0.95rem; width: 100%;
-    }
+        .tab-content.active {
+            display: block;
+        }
 
-    .grid-milestones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .milestone-card {
-      background: #21262d; border: 1px solid var(--border-color); border-radius: 8px;
-      padding: 10px; text-align: center; opacity: 0.4; transition: opacity 0.3s;
-    }
-    .milestone-card.unlocked { opacity: 1; border-color: var(--accent-gold); background: #161b22; }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
 
-    .modal {
-      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.85); align-items: center; justify-content: center; padding: 20px; z-index: 100;
-    }
-    .modal.active { display: flex; }
-    .modal-content { background: var(--card-bg); border: 2px solid var(--accent-gold); border-radius: 12px; padding: 20px; max-width: 380px; text-align: center; width: 100%; }
+        .metric-big {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--accent-green);
+            text-align: center;
+            margin: 8px 0;
+        }
 
-    nav {
-      display: flex; justify-content: space-around; background: var(--card-bg);
-      border-top: 2px solid var(--border-color); padding: 8px 0;
-    }
-    .nav-btn {
-      background: none; border: none; color: var(--text-muted); font-size: 0.7rem;
-      display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer;
-    }
-    .nav-btn.active { color: var(--accent-gold); font-weight: bold; }
-    .nav-btn span { font-size: 1.1rem; }
-  </style>
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        .btn-green { background-color: #065f46; color: #a7f3d0; }
+        .btn-red { background-color: #7f1d1d; color: #fecaca; }
+
+        .progress-bar-bg {
+            background-color: #27272a;
+            border-radius: 8px;
+            height: 16px;
+            width: 100%;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-bar-fill {
+            background-color: var(--accent-green);
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            background: #18181b;
+            border: 1px solid var(--border-color);
+            color: #fff;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+        }
+
+        nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #09090b;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+        }
+
+        .nav-item {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: var(--accent-green);
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
-  <header>
-    <h1>Sin caer en la idiotez</h1>
-    <p>Soporta el aburrimiento</p>
-    <div class="status-badge">🟢 SISTEMA LOCAL VERIFICADO & AUDITADO</div>
-  </header>
+    <header>
+        <p class="title">SIN CAER EN LA IDIOTEZ</p>
+        <div class="status-badge">● SISTEMA LOCAL VERIFICADO & AUDITADO</div>
+    </header>
 
-  <main>
-    <!-- DASHBOARD -->
-    <section id="screen-dashboard" class="screen active">
-      <div class="card mascot-box">
-        <div class="mascot-avatar">🐱</div>
-        <div class="speech-bubble" id="mascot-text">"El acecho paciente vence a la fuerza desmedida. Mantén tu posición."</div>
-      </div>
-
-      <div class="card counter-box">
-        <p style="font-size:0.75rem; color:var(--text-muted); letter-spacing:1px;">RACHA DE SOBRIEDAD</p>
-        <div class="counter-number" id="streak-counter">0</div>
-        <p style="font-size:0.75rem; color:var(--text-muted); margin-top:5px;">DÍAS DE CONTROL PATRIMONIAL</p>
-      </div>
-
-      <div class="card">
-        <p style="margin-bottom:10px; font-size:0.85rem; font-weight:bold; text-align:center;" id="checkin-title">¿Respetaste tu presupuesto diario hoy?</p>
-        <div style="display:flex; gap:10px;" id="checkin-buttons">
-          <button class="btn btn-green" id="btn-yes" onclick="registerCheckIn(true)">SÍ, PROTEGIDO</button>
-          <button class="btn btn-red" id="btn-no" onclick="openDevioModal()">NO</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:6px;">FONDO PASO 3 (META DE RESERVA)</p>
-        <div class="progress-bar-container">
-          <div class="progress-bar" id="goal-progress"></div>
-        </div>
-        <div style="display:flex; justify-content:space-between; font-size:0.75rem; margin-top:6px; color:var(--text-muted);">
-          <span id="saved-amount">$0</span>
-          <span id="target-amount">$0</span>
-        </div>
-      </div>
-    </section>
-
-    <!-- PROYECCIÓN -->
-    <section id="screen-projection" class="screen">
-      <div class="card">
-        <p style="font-size:0.8rem; color:var(--accent-gold); margin-bottom:10px; text-align:center;">Parámetros del Plan Quincenal</p>
+    <div class="main-container">
         
-        <div class="field-group">
-          <label>Ingreso Neto Quincenal ($)</label>
-          <input type="number" id="input-income" onblur="saveVariables()">
-        </div>
-        <div class="field-group">
-          <label>Costos Fijos Estructurales ($)</label>
-          <input type="number" id="input-fixed" onblur="saveVariables()">
-        </div>
-        <div class="field-group">
-          <label>Presupuesto Diario Fijo ($)</label>
-          <input type="number" id="input-daily" onblur="saveVariables()">
-        </div>
-        <div class="field-group">
-          <label>Meta Total Paso 3 ($)</label>
-          <input type="number" id="input-target" onblur="saveVariables()">
-        </div>
-        <div class="field-group">
-          <label>Ahorro Actual Acumulado ($)</label>
-          <input type="number" id="input-current" onblur="saveVariables()">
-        </div>
-      </div>
+        <!-- PESTAÑA 1: CHECK-IN & RACHA -->
+        <div id="tab1" class="tab-content active">
+            <div class="card">
+                <p style="font-size: 0.85rem; color: #d97706; margin-top:0;">"El acecho paciente vence a la fuerza desmedida. Mantén tu posición."</p>
+            </div>
 
-      <div class="card" style="text-align:center;">
-        <p style="font-size:0.75rem; color:var(--text-muted);">FECHA ESTIMADA DE LLEGADA</p>
-        <h2 id="target-date" style="color:var(--accent-green); margin-top:4px; font-size:1.2rem;">Calculando...</h2>
-      </div>
-    </section>
+            <div class="card" style="text-align: center;">
+                <span style="font-size:0.8rem; color:var(--text-muted);">RACHA DE SOBRIEDAD</span>
+                <div class="metric-big" id="streakVal">0</div>
+                <span style="font-size:0.75rem; color:var(--text-muted);">DÍAS DE CONTROL PATRIMONIAL</span>
+            </div>
 
-    <!-- DISCIPLINA -->
-    <section id="screen-discipline" class="screen">
-      <div class="card">
-        <h3 style="margin-bottom:10px; font-size:0.9rem; color:var(--accent-gold); text-align:center;">Ruta Racional del Gato Colocolo</h3>
-        <div class="grid-milestones" id="milestones-container"></div>
-      </div>
-    </section>
-  </main>
+            <div class="card">
+                <p style="text-align: center; margin-top:0;">¿Respetaste tu presupuesto diario hoy?</p>
+                <button class="btn btn-green" onclick="doCheckIn(true)">SÍ, PROTEGIDO</button>
+                <button class="btn btn-red" onclick="doCheckIn(false)">NO</button>
+            </div>
+        </div>
 
-  <!-- MODAL DESVÍO -->
-  <div class="modal" id="modal-desvio">
-    <div class="modal-content">
-      <h3 style="color:var(--accent-red); margin-bottom:8px;">Ajuste de Desvíos</h3>
-      <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:10px;">Registrar el evento para trazabilidad sin autoengaño.</p>
-      <div class="field-group">
-        <input type="number" id="desvio-amount" placeholder="Monto excedido ($)">
-      </div>
-      <div class="field-group">
-        <input type="text" id="desvio-reason" placeholder="Categoría (Ej: Gusto, Impulso)">
-      </div>
-      <button class="btn btn-red" onclick="registerDesvio()">Registrar y Reiniciar Racha</button>
+        <!-- PESTAÑA 2: GOAL / BABY STEP 3 -->
+        <div id="tab2" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0; color:#f59e0b;">OBJETIVO: BABY STEP 3</h3>
+                <p style="font-size:0.8rem; color:var(--text-muted);">Fondo de Emergencia Fijo / 6 Meses.</p>
+                
+                <div class="progress-bar-bg">
+                    <div id="goalProgress" class="progress-bar-fill"></div>
+                </div>
+
+                <p style="font-size:0.9rem;">Progreso: <strong id="pctVal">0%</strong></p>
+                <p style="font-size:0.85rem;">Monto Ahorrado Actual: <strong id="currentSaved">$0</strong></p>
+                <p style="font-size:0.85rem;">Meta Total: <strong id="targetVal">$0</strong></p>
+                <p style="font-size:0.85rem;">Falta para la Meta: <strong id="remainingVal">$0</strong></p>
+                <hr style="border-color:var(--border-color);">
+                <p style="font-size:0.85rem; color:var(--accent-green);">Payslips (Quincenas) Restantes: <strong id="payslipsVal">0</strong></p>
+                <p style="font-size:0.85rem; color:#f59e0b;">Fecha Estimada de Cumplimiento: <br><strong id="targetDateVal">Sin definir</strong></p>
+            </div>
+        </div>
+
+        <!-- PESTAÑA 3: CONFIGURACIÓN FINANCIERA -->
+        <div id="tab3" class="tab-content">
+            <div class="card">
+                <h3 style="margin-top:0;">PARÁMETROS Y CONFIGURACIÓN</h3>
+                
+                <label style="font-size:0.8rem;">Meta Total Deseada ($) [Opcional si usas gastos]:</label>
+                <input type="number" id="inputMeta" placeholder="Ej: 3600000">
+
+                <label style="font-size:0.8rem;">Gastos Fijos Mensuales ($):</label>
+                <input type="number" id="inputGastos" placeholder="Ej: 600000">
+
+                <label style="font-size:0.8rem;">Monto Ahorrado Actual ($):</label>
+                <input type="number" id="inputAhorro" placeholder="Ej: 500000">
+
+                <label style="font-size:0.8rem;">Ahorro Estimado por Payslip ($):</label>
+                <input type="number" id="inputAhorroQuincenal" placeholder="Ej: 250000">
+
+                <label style="font-size:0.8rem;">Fecha del Próximo Payslip/Pago:</label>
+                <input type="date" id="inputFechaPago">
+
+                <button class="btn btn-green" onclick="saveParams()">GUARDAR Y RECALCULAR</button>
+            </div>
+        </div>
+
     </div>
-  </div>
 
-  <!-- MODAL HITO / HISTORIA -->
-  <div class="modal" id="modal-hito">
-    <div class="modal-content">
-      <div style="font-size:2.5rem; margin-bottom:8px;">🐱</div>
-      <h3 id="hito-title" style="color:var(--accent-gold); margin-bottom:8px; font-size:1rem;"></h3>
-      <p id="hito-text" style="font-size:0.8rem; line-height:1.4; color:var(--text-main); margin-bottom:15px; text-align:left; max-height:200px; overflow-y:auto;"></p>
-      <button class="btn btn-green" onclick="closeModal('modal-hito')">Entendido</button>
-    </div>
-  </div>
+    <nav>
+        <button class="nav-item active" onclick="switchTab(1)">
+            <span>🔥</span>
+            <span>Racha</span>
+        </button>
+        <button class="nav-item" onclick="switchTab(2)">
+            <span>🎯</span>
+            <span>Baby Step 3</span>
+        </button>
+        <button class="nav-item" onclick="switchTab(3)">
+            <span>⚙️</span>
+            <span>Finanzas</span>
+        </button>
+    </nav>
 
-  <nav>
-    <button class="nav-btn active" onclick="switchScreen('dashboard', this)">
-      <span>🛡️</span> Dashboard
-    </button>
-    <button class="nav-btn" onclick="switchScreen('projection', this)">
-      <span>📈</span> Proyección
-    </button>
-    <button class="nav-btn" onclick="switchScreen('discipline', this)">
-      <span>🏆</span> Disciplina
-    </button>
-  </nav>
-
-  <script>
-    const STORIES = {
-      1: { title: "El Silencio Andino", text: "El Leopardus colocolo no persigue presas sin cálculo. Su tasa de éxito reside en la economía de movimientos. Hoy diste tu primer paso rompiendo el impulso de consumo irracional." },
-      3: { title: "El Consejo de Coyangue", text: "El Lonco Colo Colo prefirió la mediación de la palabra sabias sobre la destrucción. Tres días de temple demuestran que tu mente domina el presupuesto diario." },
-      5: { title: "La Prueba del Tronco", text: "Para elegir líder, Colo Colo propuso sostener un tronco pesado en los hombros. Caupolicán resistió días. Sostener el aburrimiento financiero es tu propia prueba de fortaleza." },
-      8: { title: "Rebeldía de 1925", text: "David Arellano y los suyos renunciaron a la mediocridad para fundar una institución sobre principios profesionales. Tu racha refleja esa misma autonomía indiscutible." },
-      11: { title: "Estrategia Silvestre", text: "El gato silvestre habita zonas áridas sin pedir recursos al entorno. Tu patrimonio se fortalece cuando dejas de ceder ante las modas del mercado." },
-      14: { title: "Cinta Negra Indeleble", text: "Desde 1927, el luto sobre el escudo recuerda la memoria de Arellano. Un recordatorio constante de respeto y seriedad ante el plan establecido." },
-      18: { title: "Resistencia Territorial", text: "El felino defiende su territorio con observación estratégica. Tu presupuesto quincenal es el límite inexpugnable donde no entra el gasto superfluo." },
-      22: { title: "Sabiduría Ancestral", text: "Colo Colo trascendió como el sabio lonco que unificó posturas en momentos de crisis. Has sobrepasado la barrera psicológica de los 21 días." },
-      27: { title: "Gesta del 73", text: "Como aquel equipo legendario que unió a un país golpeado, tu constancia diaria demuestra que la disciplina prevalece ante cualquier turbulencia económica." },
-      32: { title: "Muro Racional", text: "Un mes de impecabilidad. Has devuelto tus excedentes directamente a la meta del Paso 3. Tu Fondo de Emergencia se vuelve invulnerable." },
-      38: { title: "Dominio de la Cordillera", text: "El Leopardus colocolo camina por cumbres hostiles con agilidad serena. El aburrimiento de la rutina es la garantía de tu libertad futura." },
-      44: { title: "Mística Indomable", text: "Inspirado en la fuerza de la tierra y la tradición mapuche, tu progreso es firme, transparente y sin atajos engañosos." },
-      50: { title: "Escudo de Piedra", text: "50 días de disciplina implacable. Has asimilado la prudencia del Lonco, la agilidad del felino y la convicción del cacique." }
-    };
-
-    let db;
-    let state = {
-      streak: 0,
-      lastCheckin: null,
-      income: 1000,
-      fixed: 400,
-      daily: 10,
-      target: 5000,
-      current: 500
-    };
-
-    const request = indexedDB.open("GatoColocoloDB_v1_1", 1);
-    request.onupgradeneeded = (e) => {
-      db = e.target.result;
-      if (!db.objectStoreNames.contains("appData")) {
-        db.createObjectStore("appData", { keyPath: "id" });
-      }
-    };
-    request.onsuccess = (e) => {
-      db = e.target.result;
-      loadData();
-    };
-    request.onerror = () => {
-      console.warn("IndexedDB no disponible, ejecutando en modo fallback local.");
-    };
-
-    function saveData() {
-      if (db) {
-        const tx = db.transaction("appData", "readwrite");
-        const store = tx.objectStore("appData");
-        store.put({ id: "userState", ...state });
-      } else {
-        localStorage.setItem("GatoColocoloState", JSON.stringify(state));
-      }
-    }
-
-    function loadData() {
-      if (db) {
-        const tx = db.transaction("appData", "readonly");
-        const store = tx.objectStore("appData");
-        const req = store.get("userState");
-        req.onsuccess = () => {
-          if (req.result) state = Object.assign(state, req.result);
-          updateUI();
+    <script>
+        let state = JSON.parse(localStorage.getItem('gato_state')) || {
+            streak: 0,
+            metaExplicit: 0,
+            gastosMensuales: 0,
+            ahorroCurrent: 0,
+            ahorroPayslip: 0,
+            fechaPrimerPago: ''
         };
-      } else {
-        const local = localStorage.getItem("GatoColocoloState");
-        if (local) state = Object.assign(state, JSON.parse(local));
+
+        function updateUI() {
+            document.getElementById('streakVal').innerText = state.streak;
+            
+            // Lógica Pestaña 2
+            let target = state.metaExplicit > 0 ? state.metaExplicit : (state.gastosMensuales * 6);
+            let current = state.ahorroCurrent || 0;
+            let remaining = Math.max(0, target - current);
+            let pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
+            
+            let payslipsNeeded = 0;
+            let targetDateStr = "Sin definir";
+
+            if (state.ahorroPayslip > 0 && remaining > 0) {
+                payslipsNeeded = Math.ceil(remaining / state.ahorroPayslip);
+                
+                if (state.fechaPrimerPago) {
+                    let firstPayDate = new Date(state.fechaPrimerPago + "T00:00:00");
+                    if (!isNaN(firstPayDate.getTime())) {
+                        let finalDate = new Date(firstPayDate.getTime());
+                        // Cada payslip posterior ocurre a los 14 días
+                        finalDate.setDate(finalDate.getDate() + ((payslipsNeeded - 1) * 14));
+                        
+                        let options = { year: 'numeric', month: 'long', day: 'numeric' };
+                        targetDateStr = finalDate.toLocaleDateString('es-ES', options);
+                    }
+                }
+            } else if (remaining === 0 && target > 0) {
+                targetDateStr = "¡Meta Alcanzada!";
+            }
+
+            document.getElementById('targetVal').innerText = '$' + target.toLocaleString();
+            document.getElementById('currentSaved').innerText = '$' + current.toLocaleString();
+            document.getElementById('remainingVal').innerText = '$' + remaining.toLocaleString();
+            document.getElementById('pctVal').innerText = pct + '%';
+            document.getElementById('goalProgress').style.width = pct + '%';
+            document.getElementById('payslipsVal').innerText = payslipsNeeded;
+            document.getElementById('targetDateVal').innerText = targetDateStr;
+
+            // Formulario Pestaña 3
+            document.getElementById('inputMeta').value = state.metaExplicit || '';
+            document.getElementById('inputGastos').value = state.gastosMensuales || '';
+            document.getElementById('inputAhorro').value = state.ahorroCurrent || '';
+            document.getElementById('inputAhorroQuincenal').value = state.ahorroPayslip || '';
+            document.getElementById('inputFechaPago').value = state.fechaPrimerPago || '';
+        }
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('tab' + num).classList.add('active');
+            document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
+        }
+
+        function doCheckIn(success) {
+            if (success) {
+                state.streak += 1;
+            } else {
+                state.streak = 0;
+            }
+            localStorage.setItem('gato_state', JSON.stringify(state));
+            updateUI();
+        }
+
+        function saveParams() {
+            state.metaExplicit = Number(document.getElementById('inputMeta').value);
+            state.gastosMensuales = Number(document.getElementById('inputGastos').value);
+            state.ahorroCurrent = Number(document.getElementById('inputAhorro').value);
+            state.ahorroPayslip = Number(document.getElementById('inputAhorroQuincenal').value);
+            state.fechaPrimerPago = document.getElementById('inputFechaPago').value;
+            
+            localStorage.setItem('gato_state', JSON.stringify(state));
+            updateUI();
+            alert('Parámetros guardados correctamente.');
+        }
+
         updateUI();
-      }
-    }
-
-    function switchScreen(screenId, btn) {
-      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-      document.getElementById(`screen-${screenId}`).classList.add('active');
-      btn.classList.add('active');
-    }
-
-    function updateUI() {
-      document.getElementById('streak-counter').innerText = state.streak;
-      document.getElementById('input-income').value = state.income;
-      document.getElementById('input-fixed').value = state.fixed;
-      document.getElementById('input-daily').value = state.daily;
-      document.getElementById('input-target').value = state.target;
-      document.getElementById('input-current').value = state.current;
-
-      document.getElementById('saved-amount').innerText = `$${state.current}`;
-      document.getElementById('target-amount').innerText = `$${state.target}`;
-
-      const pct = Math.min(100, Math.max(0, (state.current / state.target) * 100));
-      document.getElementById('goal-progress').style.width = `${pct}%`;
-
-      const todayStr = new Date().toISOString().split('T')[0];
-      const btnYes = document.getElementById('btn-yes');
-      const btnNo = document.getElementById('btn-no');
-      const checkTitle = document.getElementById('checkin-title');
-
-      if (state.lastCheckin === todayStr) {
-        btnYes.className = "btn btn-disabled";
-        btnNo.className = "btn btn-disabled";
-        btnYes.disabled = true;
-        btnNo.disabled = true;
-        checkTitle.innerText = "Check-in de hoy completado. Mantén la calma.";
-      } else {
-        btnYes.className = "btn btn-green";
-        btnNo.className = "btn btn-red";
-        btnYes.disabled = false;
-        btnNo.disabled = false;
-        checkTitle.innerText = "¿Respetaste tu presupuesto diario hoy?";
-      }
-
-      calculateProjection();
-      renderMilestones();
-    }
-
-    function saveVariables() {
-      state.income = Math.max(0, Number(document.getElementById('input-income').value));
-      state.fixed = Math.max(0, Number(document.getElementById('input-fixed').value));
-      state.daily = Math.max(0, Number(document.getElementById('input-daily').value));
-      state.target = Math.max(0, Number(document.getElementById('input-target').value));
-      state.current = Math.max(0, Number(document.getElementById('input-current').value));
-      saveData();
-      updateUI();
-    }
-
-    function calculateProjection() {
-      const totalFixedQuincenal = state.fixed + (state.daily * 14);
-      const excedenteQuincenal = state.income - totalFixedQuincenal;
-
-      if (excedenteQuincenal <= 0) {
-        document.getElementById('target-date').innerText = "Ajusta presupuesto (Excedente ≤ 0)";
-        return;
-      }
-
-      const restante = Math.max(0, state.target - state.current);
-      const quincenasRestantes = Math.ceil(restante / excedenteQuincenal);
-      
-      const hoy = new Date();
-      hoy.setDate(hoy.getDate() + (quincenasRestantes * 14));
-      
-      const options = { year: 'numeric', month: 'long', day: 'numeric' };
-      document.getElementById('target-date').innerText = hoy.toLocaleDateString('es-CL', options);
-    }
-
-    function registerCheckIn(success) {
-      const todayStr = new Date().toISOString().split('T')[0];
-      if (state.lastCheckin === todayStr) return;
-
-      if (success) {
-        state.streak++;
-        state.lastCheckin = todayStr;
-        saveData();
-        updateUI();
-        checkMilestones(state.streak);
-      }
-    }
-
-    function openDevioModal() {
-      document.getElementById('modal-desvio').classList.add('active');
-    }
-
-    function registerDesvio() {
-      const todayStr = new Date().toISOString().split('T')[0];
-      state.streak = 0;
-      state.lastCheckin = todayStr;
-      saveData();
-      closeModal('modal-desvio');
-      updateUI();
-    }
-
-    function checkMilestones(streak) {
-      if (STORIES[streak]) {
-        document.getElementById('hito-title').innerText = `Hito Día ${streak}: ${STORIES[streak].title}`;
-        document.getElementById('hito-text').innerText = STORIES[streak].text;
-        document.getElementById('modal-hito').classList.add('active');
-      }
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('active');
-    }
-
-    function renderMilestones() {
-      const container = document.getElementById('milestones-container');
-      container.innerHTML = '';
-      Object.keys(STORIES).forEach(day => {
-        const isUnlocked = state.streak >= Number(day);
-        const card = document.createElement('div');
-        card.className = `milestone-card ${isUnlocked ? 'unlocked' : ''}`;
-        card.innerHTML = `
-          <div style="font-size:1.3rem;">${isUnlocked ? '🏆' : '🔒'}</div>
-          <div style="font-size:0.75rem; font-weight:bold; margin-top:2px;">Día ${day}</div>
-          <div style="font-size:0.65rem; color:var(--text-muted);">${STORIES[day].title}</div>
-        `;
-        container.appendChild(card);
-      });
-    }
-  </script>
+    </script>
 </body>
 </html>
