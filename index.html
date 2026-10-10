@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gato Colocolo - Terminal Financiera</title>
+    <title>Gato Colocolo - Terminal Financiera (AUD)</title>
     <style>
         :root {
             --bg-color: #0a0a0c;
@@ -249,7 +249,7 @@
 
     <header>
         <p class="title">SIN CAER EN LA IDIOTEZ</p>
-        <div class="status-badge">● TERMINAL LOCAL AUDITADA V1.0</div>
+        <div class="status-badge" id="headerStatus">● TERMINAL AUDITADA V1.0 | AUD ($)</div>
     </header>
 
     <div class="main-container">
@@ -284,13 +284,13 @@
 
             <div class="card">
                 <p style="margin-top:0; font-size:0.85rem; font-weight:bold;">CHECK-IN DIARIO OPERATIVO</p>
-                <label style="font-size:0.75rem;">Gasto Total de Hoy ($):</label>
-                <input type="number" id="inputGastoHoy" placeholder="Ej: 12000">
+                <label style="font-size:0.75rem;">Gasto Total de Hoy ($ AUD):</label>
+                <input type="number" id="inputGastoHoy" placeholder="Ej: 50">
                 
                 <label style="font-size:0.75rem;">Detalle Libre (Micro-gastos):</label>
-                <textarea id="inputDetalleHoy" rows="2" placeholder="Ej: 5000 jugo y pan, 7000 carga bip"></textarea>
+                <textarea id="inputDetalleHoy" rows="2" placeholder="Ej: 15 café y snack, 35 super"></textarea>
 
-                <button class="btn btn-green" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO ($Í)</button>
+                <button class="btn btn-green" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO (SÍ)</button>
                 <button class="btn btn-red" onclick="doCheckIn(false)">ME PASÉ DEL LÍMITE (NO)</button>
             </div>
 
@@ -324,7 +324,7 @@
             <div id="accPuestaAlDia" class="accordion-content">
                 <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0;">Si olvidaste registrar días anteriores, ingresa la fecha y el gasto aquí:</p>
                 <input type="date" id="inputFechaPendiente">
-                <input type="number" id="inputGastoPendiente" placeholder="Gasto real de ese día ($)">
+                <input type="number" id="inputGastoPendiente" placeholder="Gasto real de ese día ($ AUD)">
                 <button class="btn btn-amber" onclick="registrarDiaPendiente()">REGISTRAR DÍA HISTÓRICO</button>
             </div>
         </div>
@@ -332,17 +332,17 @@
         <!-- PESTAÑA 2: 🎯 BABY STEP 3 -->
         <div id="tab2" class="tab-content">
             <div class="card">
-                <h3 style="margin-top:0; color:var(--accent-amber); font-size:1rem;">OBJETIVO: BABY STEP 3</h3>
-                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-4px;">Fondo de Emergencia de 6 Meses.</p>
+                <h3 style="margin-top:0; color:var(--accent-amber); font-size:1rem;">OBJETIVO: BABY STEP 3 (AUD)</h3>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-4px;">Fondo de Emergencia (Meta Declarada).</p>
                 
                 <div class="progress-bar-bg">
                     <div id="goalProgress" class="progress-bar-fill"></div>
                 </div>
 
                 <p style="font-size:0.85rem;">Progreso Total: <strong id="pctVal">0%</strong></p>
-                <p style="font-size:0.8rem;">Ahorro Actual: <strong id="currentSaved">$0</strong></p>
-                <p style="font-size:0.8rem;">Meta Declarada: <strong id="targetVal">$0</strong></p>
-                <p style="font-size:0.8rem;">Monto Faltante: <strong id="remainingVal">$0</strong></p>
+                <p style="font-size:0.8rem;">Ahorro Actual: <strong id="currentSaved">$0 AUD</strong></p>
+                <p style="font-size:0.8rem;">Meta Declarada: <strong id="targetVal">$0 AUD</strong></p>
+                <p style="font-size:0.8rem;">Monto Faltante: <strong id="remainingVal">$0 AUD</strong></p>
                 <hr style="border-color:var(--border-color);">
                 <p style="font-size:0.8rem; color:var(--accent-green);">Payslips (Quincenas) Restantes: <strong id="payslipsVal">0</strong></p>
                 <p style="font-size:0.8rem; color:var(--accent-amber);">Fecha Estimada: <br><strong id="targetDateVal">Sin definir</strong></p>
@@ -362,7 +362,7 @@
                 <span>📊 TERMINAL DE DELTAS (ÚLTIMOS PERIODOS)</span> <span>▼</span>
             </button>
             <div id="accDeltas" class="accordion-content">
-                <p style="font-size:0.75rem; margin-top:0;">Deltas de Ahorro Neto:</p>
+                <p style="font-size:0.75rem; margin-top:0;">Deltas de Ahorro Neto Quincenal (AUD):</p>
                 <div id="deltasContainer" style="font-size:0.75rem;">Sin periodos cerrados.</div>
             </div>
 
@@ -371,8 +371,8 @@
                 <span>🚨 REGISTRAR EXTRACCIÓN O CAÍDA</span> <span>▼</span>
             </button>
             <div id="accCaidas" class="accordion-content">
-                <label style="font-size:0.75rem;">Monto Retirado de Ahorros ($):</label>
-                <input type="number" id="inputMontoCaida" placeholder="Ej: 50000">
+                <label style="font-size:0.75rem;">Monto Retirado de Ahorros ($ AUD):</label>
+                <input type="number" id="inputMontoCaida" placeholder="Ej: 200">
                 <label style="font-size:0.75rem;">Motivo / Destino de la Caída:</label>
                 <input type="text" id="inputMotivoCaida" placeholder="Ej: Impulso, Emergencia">
                 <button class="btn btn-red" onclick="registrarCaida()">REGISTRAR RETIRO EN BITÁCORA</button>
@@ -393,23 +393,30 @@
                 <h3 style="margin-top:0; font-size:1rem; color:var(--accent-blue);">CIERRE Y APERTURA DE PAYSLIP</h3>
                 <p style="font-size:0.75rem; color:var(--text-muted);" id="payslipStatusMsg">Ciclo activo.</p>
                 
-                <p style="font-size:0.8rem; margin-bottom:4px;">Excedente Neto Acumulado: <strong id="excedenteQuincenalVal">$0</strong></p>
+                <p style="font-size:0.8rem; margin-bottom:4px;">Excedente Neto Acumulado: <strong id="excedenteQuincenalVal">$0 AUD</strong></p>
                 <button class="btn btn-green" onclick="ejecutarRitualCierre()">EJECUTAR RITUAL DE CIERRE</button>
             </div>
 
             <!-- ACORDEÓN 1: PARÁMETROS BASE -->
             <button class="accordion-btn" onclick="toggleAccordion('accParams')">
-                <span>🛠️ PARÁMETROS FINANCIEROS BASE</span> <span>▼</span>
+                <span>🛠️ PARÁMETROS FINANCIEROS BASE (AUD)</span> <span>▼</span>
             </button>
             <div id="accParams" class="accordion-content">
-                <label style="font-size:0.75rem;">Meta Total Deseada ($):</label>
-                <input type="number" id="inputMeta">
-                <label style="font-size:0.75rem;">Gastos Fijos Mensuales ($):</label>
-                <input type="number" id="inputGastos">
-                <label style="font-size:0.75rem;">Ahorro Base por Payslip ($):</label>
-                <input type="number" id="inputAhorroQuincenal">
-                <label style="font-size:0.75rem;">Presupuesto Diario Objetivo ($):</label>
-                <input type="number" id="inputPresupuestoDiario">
+                <label style="font-size:0.75rem;">Ahorro Actual Acumulado ($ AUD):</label>
+                <input type="number" id="inputAhorroCurrent" placeholder="Capital inicial en tu banco AUD">
+
+                <label style="font-size:0.75rem;">Meta Total Deseada ($ AUD):</label>
+                <input type="number" id="inputMeta" placeholder="Ej: 12000">
+
+                <label style="font-size:0.75rem;">Gastos Fijos Quincenales ($ AUD):</label>
+                <input type="number" id="inputGastos" placeholder="Ej: 800">
+
+                <label style="font-size:0.75rem;">Ahorro Base por Payslip ($ AUD):</label>
+                <input type="number" id="inputAhorroQuincenal" placeholder="Ej: 500">
+
+                <label style="font-size:0.75rem;">Presupuesto Diario Objetivo ($ AUD):</label>
+                <input type="number" id="inputPresupuestoDiario" placeholder="Ej: 40">
+
                 <button class="btn btn-blue" onclick="saveParams()">GUARDAR PARÁMETROS</button>
             </div>
 
@@ -469,20 +476,44 @@
             "Es sorprendente la ventaja que obtienen las personas que simplemente intentan no ser estúpidas."
         ];
 
-        let state = JSON.parse(localStorage.getItem('gato_state')) || {
-            streak: 0,
-            metaExplicit: 0,
-            gastosMensuales: 0,
-            ahorroCurrent: 0,
-            ahorroPayslip: 0,
-            presupuestoDiario: 0,
-            fechaPrimerPago: '',
-            excedenteQuincenal: 0,
-            mungerDeck: [],
-            dailyLogs: [],
-            history: [],
-            deltas: []
-        };
+        function getDeviceTimeZone() {
+            try {
+                return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+            } catch(e) {
+                return 'UTC';
+            }
+        }
+
+        function fmtAUD(num) {
+            return '$' + Number(num || 0).toLocaleString('en-AU') + ' AUD';
+        }
+
+        function sanitizeState(s) {
+            if (!s || typeof s !== 'object') s = {};
+            return {
+                streak: Number(s.streak) || 0,
+                metaExplicit: Number(s.metaExplicit) || 0,
+                gastosQuincenales: Number(s.gastosQuincenales) || 0,
+                ahorroCurrent: Number(s.ahorroCurrent) || 0,
+                ahorroPayslip: Number(s.ahorroPayslip) || 0,
+                presupuestoDiario: Number(s.presupuestoDiario) || 0,
+                fechaPrimerPago: s.fechaPrimerPago || '',
+                excedenteQuincenal: Number(s.excedenteQuincenal) || 0,
+                mungerDeck: Array.isArray(s.mungerDeck) ? s.mungerDeck : [],
+                dailyLogs: Array.isArray(s.dailyLogs) ? s.dailyLogs : [],
+                history: Array.isArray(s.history) ? s.history : [],
+                deltas: Array.isArray(s.deltas) ? s.deltas : []
+            };
+        }
+
+        let state = sanitizeState(JSON.parse(localStorage.getItem('gato_state')));
+
+        function getLocalDateStr(d = new Date()) {
+            let year = d.getFullYear();
+            let month = String(d.getMonth() + 1).padStart(2, '0');
+            let day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
 
         function setGatoEmotion(emotion) {
             let boca = document.getElementById('bocaGato');
@@ -543,13 +574,14 @@
         function checkPendingDays() {
             let yesterday = new Date();
             yesterday.setDate(yesterday.getDate() - 1);
-            let yesterdayStr = yesterday.toISOString().split('T')[0];
+            let yesterdayStr = getLocalDateStr(yesterday);
 
             let logs = state.dailyLogs || [];
             let hasYesterday = logs.some(l => l.date === yesterdayStr);
+            let hasOlderLog = logs.some(l => l.date < yesterdayStr);
 
             let banner = document.getElementById('pendingBanner');
-            if (!hasYesterday && state.dailyLogs && state.dailyLogs.length > 0) {
+            if (!hasYesterday && hasOlderLog) {
                 banner.style.display = 'block';
                 document.getElementById('inputFechaPendiente').value = yesterdayStr;
             } else {
@@ -558,9 +590,12 @@
         }
 
         function updateUI() {
-            document.getElementById('streakVal').innerText = state.streak;
+            let currentTZ = getDeviceTimeZone();
+            document.getElementById('headerStatus').innerText = `● TERMINAL AUDITADA V1.0 | ${currentTZ}`;
+
+            document.getElementById('streakVal').innerText = state.streak || 0;
             
-            let target = state.metaExplicit > 0 ? state.metaExplicit : (state.gastosMensuales * 6);
+            let target = state.metaExplicit || 0;
             let current = state.ahorroCurrent || 0;
             let remaining = Math.max(0, target - current);
             let pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
@@ -571,7 +606,7 @@
             if (state.ahorroPayslip > 0 && remaining > 0) {
                 payslipsNeeded = Math.ceil(remaining / state.ahorroPayslip);
                 if (state.fechaPrimerPago) {
-                    let firstPayDate = new Date(state.fechaPrimerPago + "T00:00:00");
+                    let firstPayDate = new Date(state.fechaPrimerPago + "T12:00:00");
                     if (!isNaN(firstPayDate.getTime())) {
                         let finalDate = new Date(firstPayDate.getTime());
                         finalDate.setDate(finalDate.getDate() + ((payslipsNeeded - 1) * 14));
@@ -582,18 +617,19 @@
                 targetDateStr = "¡Meta Alcanzada!";
             }
 
-            document.getElementById('targetVal').innerText = '$' + target.toLocaleString();
-            document.getElementById('currentSaved').innerText = '$' + current.toLocaleString();
-            document.getElementById('remainingVal').innerText = '$' + remaining.toLocaleString();
+            document.getElementById('targetVal').innerText = fmtAUD(target);
+            document.getElementById('currentSaved').innerText = fmtAUD(current);
+            document.getElementById('remainingVal').innerText = fmtAUD(remaining);
             document.getElementById('pctVal').innerText = pct + '%';
             document.getElementById('goalProgress').style.width = pct + '%';
             document.getElementById('payslipsVal').innerText = payslipsNeeded;
             document.getElementById('targetDateVal').innerText = targetDateStr;
 
-            document.getElementById('excedenteQuincenalVal').innerText = '$' + (state.excedenteQuincenal || 0).toLocaleString();
+            document.getElementById('excedenteQuincenalVal').innerText = fmtAUD(state.excedenteQuincenal || 0);
 
+            document.getElementById('inputAhorroCurrent').value = state.ahorroCurrent || '';
             document.getElementById('inputMeta').value = state.metaExplicit || '';
-            document.getElementById('inputGastos').value = state.gastosMensuales || '';
+            document.getElementById('inputGastos').value = state.gastosQuincenales || '';
             document.getElementById('inputAhorroQuincenal').value = state.ahorroPayslip || '';
             document.getElementById('inputPresupuestoDiario').value = state.presupuestoDiario || '';
             document.getElementById('inputFechaPago').value = state.fechaPrimerPago || '';
@@ -615,24 +651,36 @@
         function doCheckIn(success) {
             let spent = Number(document.getElementById('inputGastoHoy').value) || 0;
             let detail = document.getElementById('inputDetalleHoy').value || '';
-            let today = new Date().toISOString().split('T')[0];
+            let today = getLocalDateStr();
+            let currentTZ = getDeviceTimeZone();
 
             if (!state.dailyLogs) state.dailyLogs = [];
-            state.dailyLogs.push({ date: today, spent: spent, detail: detail });
-
+            
+            let existingIdx = state.dailyLogs.findIndex(l => l.date === today);
             let limit = state.presupuestoDiario || 0;
+
+            if (existingIdx !== -1) {
+                let prevSpent = state.dailyLogs[existingIdx].spent;
+                if (limit > 0) {
+                    state.excedenteQuincenal -= (limit - prevSpent);
+                }
+                state.dailyLogs[existingIdx] = { date: today, spent: spent, detail: detail, tz: currentTZ, success: success };
+            } else {
+                state.dailyLogs.push({ date: today, spent: spent, detail: detail, tz: currentTZ, success: success });
+                if (success) {
+                    state.streak += 1;
+                } else {
+                    state.streak = 0;
+                }
+            }
+
             if (limit > 0) {
                 let diff = limit - spent;
                 state.excedenteQuincenal = (state.excedenteQuincenal || 0) + diff;
             }
 
-            if (success) {
-                state.streak += 1;
-                setGatoEmotion('happy');
-            } else {
-                state.streak = 0;
-                setGatoEmotion('sad');
-            }
+            if (success) setGatoEmotion('happy');
+            else setGatoEmotion('sad');
 
             localStorage.setItem('gato_state', JSON.stringify(state));
             document.getElementById('inputGastoHoy').value = '';
@@ -644,12 +692,24 @@
         function registrarDiaPendiente() {
             let fecha = document.getElementById('inputFechaPendiente').value;
             let gasto = Number(document.getElementById('inputGastoPendiente').value) || 0;
+            let currentTZ = getDeviceTimeZone();
             if (!fecha) return alert('Selecciona una fecha válida.');
 
             if (!state.dailyLogs) state.dailyLogs = [];
-            state.dailyLogs.push({ date: fecha, spent: gasto, detail: 'Puesta al día histórica' });
-
+            
+            let existingIdx = state.dailyLogs.findIndex(l => l.date === fecha);
             let limit = state.presupuestoDiario || 0;
+
+            if (existingIdx !== -1) {
+                let prevSpent = state.dailyLogs[existingIdx].spent;
+                if (limit > 0) {
+                    state.excedenteQuincenal -= (limit - prevSpent);
+                }
+                state.dailyLogs[existingIdx] = { date: fecha, spent: gasto, detail: 'Puesta al día histórica', tz: currentTZ };
+            } else {
+                state.dailyLogs.push({ date: fecha, spent: gasto, detail: 'Puesta al día histórica', tz: currentTZ });
+            }
+
             if (limit > 0) {
                 state.excedenteQuincenal = (state.excedenteQuincenal || 0) + (limit - gasto);
             }
@@ -662,15 +722,16 @@
         function registrarCaida() {
             let monto = Number(document.getElementById('inputMontoCaida').value);
             let motivo = document.getElementById('inputMotivoCaida').value || 'Sin motivo especificado';
+            let currentTZ = getDeviceTimeZone();
             if (!monto || monto <= 0) return alert('Ingresa un monto válido.');
 
             state.ahorroCurrent = Math.max(0, (state.ahorroCurrent || 0) - monto);
             state.streak = 0;
             setGatoEmotion('sad');
 
-            let today = new Date().toISOString().split('T')[0];
+            let today = getLocalDateStr();
             if (!state.history) state.history = [];
-            state.history.push({ date: today, balance: state.ahorroCurrent, type: 'CAIDA', note: motivo });
+            state.history.push({ date: today, balance: state.ahorroCurrent, type: 'CAIDA', note: motivo, tz: currentTZ });
 
             localStorage.setItem('gato_state', JSON.stringify(state));
             document.getElementById('inputMontoCaida').value = '';
@@ -681,23 +742,24 @@
 
         function ejecutarRitualCierre() {
             let exc = state.excedenteQuincenal || 0;
-            let confirm = window.confirm(`Cierre de Quincena:\nExcedente neto a transferir: $${exc.toLocaleString()}.\n\n¿Ya realizaste la transferencia bancaria real a tu cuenta de ahorro?`);
+            let currentTZ = getDeviceTimeZone();
+            let confirm = window.confirm(`Cierre de Quincena:\nExcedente neto a transferir: ${fmtAUD(exc)}.\n\n¿Ya realizaste la transferencia bancaria real a tu cuenta de ahorro AUD?`);
             
             if (confirm) {
                 let base = state.ahorroPayslip || 0;
                 let totalAdd = base + exc;
                 state.ahorroCurrent = (state.ahorroCurrent || 0) + totalAdd;
 
-                let today = new Date().toISOString().split('T')[0];
+                let today = getLocalDateStr();
                 if (!state.history) state.history = [];
-                state.history.push({ date: today, balance: state.ahorroCurrent, type: 'PAYSLIP', note: `Ahorro base $${base} + Excedente $${exc}` });
+                state.history.push({ date: today, balance: state.ahorroCurrent, type: 'PAYSLIP', note: `Ahorro base ${fmtAUD(base)} + Excedente ${fmtAUD(exc)}`, tz: currentTZ });
 
                 state.excedenteQuincenal = 0;
 
                 if (state.fechaPrimerPago) {
-                    let d = new Date(state.fechaPrimerPago + "T00:00:00");
+                    let d = new Date(state.fechaPrimerPago + "T12:00:00");
                     d.setDate(d.getDate() + 14);
-                    state.fechaPrimerPago = d.toISOString().split('T')[0];
+                    state.fechaPrimerPago = getLocalDateStr(d);
                 }
 
                 setGatoEmotion('happy');
@@ -711,14 +773,22 @@
         }
 
         function saveParams() {
-            state.metaExplicit = Number(document.getElementById('inputMeta').value);
-            state.gastosMensuales = Number(document.getElementById('inputGastos').value);
-            state.ahorroPayslip = Number(document.getElementById('inputAhorroQuincenal').value);
-            state.presupuestoDiario = Number(document.getElementById('inputPresupuestoDiario').value);
+            let newAhorro = Number(document.getElementById('inputAhorroCurrent').value) || 0;
+            state.ahorroCurrent = newAhorro;
+            state.metaExplicit = Number(document.getElementById('inputMeta').value) || 0;
+            state.gastosQuincenales = Number(document.getElementById('inputGastos').value) || 0;
+            state.ahorroPayslip = Number(document.getElementById('inputAhorroQuincenal').value) || 0;
+            state.presupuestoDiario = Number(document.getElementById('inputPresupuestoDiario').value) || 0;
             
+            let today = getLocalDateStr();
+            let currentTZ = getDeviceTimeZone();
+            if (!state.history || state.history.length === 0) {
+                state.history = [{ date: today, balance: newAhorro, type: 'INICIO', note: 'Ahorro base inicial declarado', tz: currentTZ }];
+            }
+
             localStorage.setItem('gato_state', JSON.stringify(state));
             updateUI();
-            alert('Parámetros guardados.');
+            alert('Parámetros guardados correctamente.');
         }
 
         function saveFechaPago() {
@@ -737,8 +807,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
             let hist = state.history || [];
-            if (hist.length < 2) {
-                document.getElementById('chartStats').innerText = "Insuficientes datos para la Equity Curve.";
+            if (hist.length < 1) {
+                document.getElementById('chartStats').innerText = "Sin suficientes datos para la Equity Curve.";
                 return;
             }
 
@@ -754,18 +824,18 @@
             ctx.beginPath();
             ctx.lineWidth = 2;
             let lastVal = balances[balances.length - 1];
-            let prevVal = balances[balances.length - 2];
+            let prevVal = hist.length > 1 ? balances[balances.length - 2] : lastVal;
             ctx.strokeStyle = lastVal >= prevVal ? "#10b981" : "#ef4444";
 
             hist.forEach((pt, idx) => {
-                let x = padding + (idx / (hist.length - 1)) * w;
+                let x = hist.length === 1 ? canvas.width / 2 : padding + (idx / (hist.length - 1)) * w;
                 let y = (canvas.height - padding) - ((pt.balance - min) / (max - min)) * h;
                 if (idx === 0) ctx.moveTo(x, y);
                 else ctx.lineTo(x, y);
             });
 
             ctx.stroke();
-            document.getElementById('chartStats').innerText = `Puntos registrados: ${hist.length} | Balance Actual: $${lastVal.toLocaleString()}`;
+            document.getElementById('chartStats').innerText = `Puntos registrados: ${hist.length} | Balance Actual: ${fmtAUD(lastVal)}`;
         }
 
         function renderHistoryLogs() {
@@ -779,8 +849,9 @@
             let html = "";
             hist.slice().reverse().forEach(item => {
                 let color = item.type === 'CAIDA' ? 'var(--accent-red)' : 'var(--accent-green)';
+                let tzInfo = item.tz ? ` (${item.tz})` : '';
                 html += `<div style="border-bottom:1px solid #27272a; padding:4px 0;">
-                    <span style="color:${color}; font-weight:bold;">[${item.type}]</span> ${item.date} - $${item.balance.toLocaleString()}<br>
+                    <span style="color:${color}; font-weight:bold;">[${item.type}]</span> ${item.date}${tzInfo} - ${fmtAUD(item.balance)}<br>
                     <span style="color:var(--text-muted);">${item.note}</span>
                 </div>`;
             });
@@ -799,7 +870,7 @@
             for (let i = Math.max(1, hist.length - 6); i < hist.length; i++) {
                 let diff = hist[i].balance - hist[i-1].balance;
                 let color = diff >= 0 ? "var(--accent-green)" : "var(--accent-red)";
-                html += `<div>${hist[i].date}: <strong style="color:${color}">${diff >= 0 ? '+' : ''}$${diff.toLocaleString()}</strong></div>`;
+                html += `<div>${hist[i].date}: <strong style="color:${color}">${diff >= 0 ? '+' : ''}${fmtAUD(diff)}</strong></div>`;
             }
             container.innerHTML = html;
         }
@@ -840,7 +911,7 @@
             let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
             let dlAnchorElem = document.createElement('a');
             dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `gato_colocolo_backup_${new Date().toISOString().split('T')[0]}.json`);
+            dlAnchorElem.setAttribute("download", `gato_colocolo_backup_${getLocalDateStr()}.json`);
             dlAnchorElem.click();
         }
 
@@ -850,7 +921,7 @@
                 try {
                     let imported = JSON.parse(e.target.result);
                     if (imported && typeof imported === 'object') {
-                        state = imported;
+                        state = sanitizeState(imported);
                         localStorage.setItem('gato_state', JSON.stringify(state));
                         updateUI();
                         alert('Backup importado correctamente.');
