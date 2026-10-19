@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Gato Colocolo - Terminal Financiera</title>
+    <title>Budget Salinas</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0e1111">
     <style>
@@ -58,11 +58,11 @@
             display: flex; justify-content: space-around; align-items: center; z-index: 100;
         }
         .nav-i {
-            background: none; border: none; color: var(--mut); font-size: 0.7rem;
+            background: none; border: none; color: var(--mut); font-size: 0.65rem;
             display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1;
         }
         .nav-i.active { color: var(--amber); }
-        .nav-i span:first-child { font-size: 1.1rem; margin-bottom: 2px; }
+        .nav-i span:first-child { font-size: 1rem; margin-bottom: 2px; }
         .p-bg { width: 100%; background: #0b0d0e; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
         .p-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s; }
         .acc-btn {
@@ -72,13 +72,15 @@
         }
         .acc-content { display: none; padding: 8px 0; }
         label { font-size: 0.75rem; color: var(--mut); display: block; margin-bottom: 4px; }
+        .flex-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+        canvas { width: 100%; height: 200px; background: #0b0d0e; border-radius: 6px; margin-top: 8px; }
     </style>
 </head>
 <body>
 
 <header>
-    <span>🐱 GATO COLOCOLO</span>
-    <span style="color:var(--green)">● TERMINAL SOBERANA</span>
+    <span>📈 BUDGET SALINAS</span>
+    <span style="color:var(--green)">● ONLINE</span>
 </header>
 
 <div class="main">
@@ -102,36 +104,42 @@
         </div>
     </div>
 
-    <!-- PESTAÑA 2: BS3 (FONDO DE EMERGENCIA) -->
+    <!-- PESTAÑA 2: BS3 -->
     <div id="tab2" class="tab">
         <div class="card">
-            <h3 style="margin:0;color:var(--amber);font-size:.9rem">🎯 BABY STEP 3 (ESCUDO DEFENSIVO)</h3>
+            <h3 style="margin:0;color:var(--amber);font-size:.9rem">🎯 ESCUDO DEFENSIVO (BS3)</h3>
             <div class="p-bg"><div id="goalProgress" class="p-fill"></div></div>
             <p style="font-size:.75rem;margin:4px 0">Progreso: <strong id="pctVal">0%</strong></p>
             <p style="font-size:.75rem;margin:4px 0">Actual: <strong id="currentSaved">$0</strong> / Meta (6 meses): <strong id="targetVal">$0</strong></p>
-            <span style="font-size:.75rem;color:var(--mut);margin-top:8px;display:block">* El fondo de emergencia se alimenta exclusivamente de forma consciente durante la Apertura Quincenal (Payslip).</span>
+            <p style="font-size:.75rem;color:var(--mut);margin-top:8px;line-height:1.4">
+                El escudo inquebrantable que otorga paz mental absoluta frente a cualquier imprevisto de la vida real. Se alimenta de forma consciente durante la Apertura Quincenal.
+            </p>
         </div>
     </div>
 
-    <!-- PESTAÑA 3: ACCIONES & FUTUROS -->
+    <!-- PESTAÑA 3: CAPITAL -->
     <div id="tab3" class="tab">
         <div class="card">
-            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟢 CUENTA DE ACCIONES (AUD)</h4>
-            <p style="font-size:.75rem">Total Aportado Histórico: <strong id="accAcciones">$0</strong></p>
-            <span style="font-size:.75rem;color:var(--mut)">* Registro de capital soberano inyectado vía Payslip. Sin retiros previstos a corto plazo.</span>
+            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟢 CAPITAL DE LARGO PLAZO (ACCIONES - AUD)</h4>
+            <p style="font-size:.75rem">Acumulado Histórico: <strong id="accAcciones">$0</strong></p>
+            <p style="font-size:.75rem;color:var(--mut);margin-top:6px;line-height:1.4">
+                Sembrar con absoluta paciencia, construyendo un patrimonio silencioso que madura a lo largo de los años sin ruidos ni emociones.
+            </p>
         </div>
         <div class="card">
-            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟡 CUENTA DE FUTUROS (USD - NINJA TRADER)</h4>
-            <p style="font-size:.75rem">Total Histórico Enviado: <strong id="accFuturos">$0</strong></p>
-            <span style="font-size:.75rem;color:var(--mut)">* Capital ofensivo de riesgo controlado. Asignado exclusivamente desde la Apertura Quincenal.</span>
+            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟡 CAPITAL ESPECULATIVO (FUTUROS - USD)</h4>
+            <p style="font-size:.75rem">Acumulado Histórico: <strong id="accFuturos">$0</strong></p>
+            <p style="font-size:.75rem;color:var(--mut);margin-top:6px;line-height:1.4">
+                Es infinitamente más importante cuidar el dinero que ya poseemos que ir desesperadamente tras más. En la especulación, la supervivencia y la defensa impecable son las que forjan la ventaja a largo plazo.
+            </p>
         </div>
     </div>
 
-    <!-- PESTAÑA 4: PROYECTOS DE VIDA (SINKING FUNDS) -->
+    <!-- PESTAÑA 4: PROYECTOS -->
     <div id="tab4" class="tab">
         <div class="card">
-            <h3 style="margin:0;font-size:.9rem;color:var(--blue)">🧳 PROYECTOS DE VIDA ACTIVOS</h3>
-            <input type="text" id="inputProjName" placeholder="Nombre (ej. Skydiving, Ropa)">
+            <h3 style="margin:0;font-size:.9rem;color:var(--blue)">🧳 PROYECTOS DE VIDA (SINKING FUNDS)</h3>
+            <input type="text" id="inputProjName" placeholder="Nombre (ej. Skydiving, Viaje)">
             <input type="text" inputmode="numeric" id="inputProjGoal" placeholder="Meta Total ($)">
             <button class="btn btn-b" onclick="crearProyecto()">CREAR PROYECTO</button>
         </div>
@@ -140,37 +148,55 @@
         <div id="accArchivados" class="acc-content"><div id="archivadosContainer"></div></div>
     </div>
 
-    <!-- PESTAÑA 5: PAYSLIP & MOTOR -->
+    <!-- PESTAÑA 5: GRÁFICAS / EVOLUCIÓN -->
     <div id="tab5" class="tab">
+        <div class="card">
+            <h3 style="margin:0;font-size:.9rem;color:var(--amber)">📊 EVOLUCIÓN DE BÓVEDAS</h3>
+            <p style="font-size:.75rem;color:var(--mut);margin:4px 0 8px 0">Seguimiento histórico del capital asignado por quincena.</p>
+            <canvas id="evolutionChart"></canvas>
+        </div>
+    </div>
+
+    <!-- PESTAÑA 6: PAYSLIP & MOTOR -->
+    <div id="tab6" class="tab">
         <div class="card">
             <h3 style="margin:0;font-size:.9rem;color:var(--green)">⚙️ APERTURA QUINCENAL</h3>
             <label>Sueldo Bruto Payslip ($)</label>
-            <input type="text" inputmode="numeric" id="inputPayslipSueldo" placeholder="Ej. 1.200.000">
-            <label>Costos Fijos + Supermercado ($)</label>
-            <input type="text" inputmode="numeric" id="inputPayslipCostos" placeholder="Ej. 600.000">
-            <button class="btn btn-b" onclick="calcularPayslip()">CALCULAR EXCEDENTE</button>
-            <hr style="border:0;border-top:1px solid var(--surface-border);margin:10px 0">
-            <p style="font-size:.8rem;margin:4px 0">Excedente Libre Disponible: <strong id="excedenteVal" style="color:var(--amber)">$0</strong></p>
+            <input type="text" inputmode="numeric" id="inputPayslipSueldo" placeholder="Ej. 1.200.000" onkeyup="calcularPayslip()">
             
-            <div id="distribucionContainer" style="display:none; margin-top:10px;">
-                <p style="font-size:.75rem;font-weight:bold;color:var(--green)">DISTRIBUCIÓN CONSCIENTE DEL EXCEDENTE</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 4px 0;">
+                <p style="font-size:.75rem;font-weight:bold;color:var(--amber);margin:0">GASTOS OBLIGATORIOS / COMPROMISOS</p>
+                <button class="btn btn-b" style="width: auto; padding: 4px 8px; font-size: 0.7rem; margin:0;" onclick="agregarCategoriaGasto()">+ Agregar</button>
+            </div>
+            
+            <div id="categoriasGastosContainer" style="margin-bottom: 8px;"></div>
+
+            <hr style="border:0;border-top:1px solid var(--surface-border);margin:10px 0">
+            <p style="font-size:.85rem;margin:4px 0">Excedente Libre Calculado: <strong id="excedenteVal" style="color:var(--amber)">$0</strong></p>
+            
+            <div id="distribucionContainer" style="margin-top:14px; background:#0b0d0e; padding:12px; border-radius:6px; border:1px solid var(--surface-border);">
+                <p style="font-size:.75rem;font-weight:bold;color:var(--green);margin-top:0">DISTRIBUCIÓN CONSCIENTE DEL EXCEDENTE</p>
                 <label>Aportar a BS3 (Fondo de Emergencia)</label>
                 <input type="text" inputmode="numeric" id="distBS3" placeholder="0">
                 <label>Aportar a Acciones (AUD)</label>
                 <input type="text" inputmode="numeric" id="distAcciones" placeholder="0">
                 <label>Aportar a Futuros (USD) ⚠️</label>
                 <input type="text" inputmode="numeric" id="distFuturos" placeholder="0">
-                <label>Aportar a un Proyecto Activo</label>
+                
+                <label style="color:var(--blue);font-weight:bold;margin-top:6px">Aportar a Proyecto Activo</label>
                 <select id="selectProyectoDist"><option value="">-- Seleccionar Proyecto --</option></select>
-                <input type="text" inputmode="numeric" id="distProyectoMonto" placeholder="Monto para el proyecto">
-                <button class="btn btn-g" onclick="ejecutarDistribucion()">CONFIRMAR Y DISTRIBUIR EXCEDENTE</button>
+                <input type="text" inputmode="numeric" id="distProyectoMonto" placeholder="Monto para el proyecto ($)">
+                
+                <button class="btn btn-g" style="margin-top:8px" onclick="ejecutarDistribucion()">CONFIRMAR Y REGISTRAR APERTURA</button>
             </div>
         </div>
 
-        <button class="acc-btn" onclick="toggleAcc('accBackup')">💾 RESPALDO OFFLINE (JSON) <span>▼</span></button>
+        <button class="acc-btn" onclick="toggleAcc('accBackup')">💾 RESPALDO Y GESTIÓN DE DATOS <span>▼</span></button>
         <div id="accBackup" class="acc-content">
             <button class="btn btn-b" onclick="exportarBackup()">DESCARGAR BACKUP JSON</button>
             <input type="file" id="inputImportBackup" accept=".json" onchange="importarBackup(event)" style="margin-top:6px">
+            <hr style="border:0;border-top:1px solid var(--surface-border);margin:10px 0">
+            <button class="btn btn-r" onclick="resetearEstado()">🗑️ REINICIAR TERMINAL A CERO (RESET)</button>
         </div>
     </div>
 </div>
@@ -180,7 +206,8 @@
     <button class="nav-i" onclick="switchTab(2)"><span>🎯</span><span>BS3</span></button>
     <button class="nav-i" onclick="switchTab(3)"><span>📈</span><span>Capital</span></button>
     <button class="nav-i" onclick="switchTab(4)"><span>🧳</span><span>Proyectos</span></button>
-    <button class="nav-i" onclick="switchTab(5)"><span>⚙️</span><span>Payslip</span></button>
+    <button class="nav-i" onclick="switchTab(5)"><span>📊</span><span>Gráficas</span></button>
+    <button class="nav-i" onclick="switchTab(6)"><span>⚙️</span><span>Payslip</span></button>
 </nav>
 
 <script>
@@ -192,9 +219,14 @@ const MUNGER_QUOTES = [
     "El hábito de postergar la gratificación es la herramienta definitiva para la libertad."
 ];
 
-let state = JSON.parse(localStorage.getItem('gato_state')) || {
+let state = JSON.parse(localStorage.getItem('budget_salinas_state')) || {
     streak: 0, metaBS3: 0, gastosMensuales: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0,
-    proyectos: [], dailyLogs: []
+    proyectos: [], dailyLogs: [], categoriasGastos: [
+        { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
+        { id: 2, name: "Supermercado", amount: 0 },
+        { id: 3, name: "Transporte / Bencina", amount: 0 }
+    ],
+    history: [] // Historial para gráficas [{date, bs3, acciones, futuros}]
 };
 
 let currentExcedente = 0;
@@ -219,6 +251,7 @@ function switchTab(n) {
     document.querySelectorAll('.nav-i').forEach(e => e.classList.remove('active'));
     document.getElementById('tab' + n).classList.add('active');
     document.querySelectorAll('.nav-i')[n - 1].classList.add('active');
+    if (n === 5) { dibujarGrafica(); }
 }
 
 function updateUI() {
@@ -238,8 +271,52 @@ function updateUI() {
     document.getElementById('accFuturos').innerText = formatMoney(state.futurosTotal);
 
     renderProyectos();
+    renderCategoriasGastos();
     actualizarSelectProyectos();
-    localStorage.setItem('gato_state', JSON.stringify(state));
+    localStorage.setItem('budget_salinas_state', JSON.stringify(state));
+}
+
+function renderCategoriasGastos() {
+    let cont = document.getElementById('categoriasGastosContainer');
+    if (!cont) return;
+    if (!state.categoriasGastos) state.categoriasGastos = [];
+    
+    let html = "";
+    state.categoriasGastos.forEach((cat, index) => {
+        html += `<div class="flex-row">
+            <input type="text" value="${cat.name}" onchange="actualizarNombreCat(${index}, this.value)" placeholder="Nombre categoría" style="flex:1; margin-bottom:0;">
+            <input type="text" inputmode="numeric" id="cat_amt_${index}" value="${cat.amount > 0 ? cat.amount : ''}" onkeyup="calcularPayslip()" placeholder="Monto ($)" style="flex:1; margin-bottom:0;">
+            <button class="btn btn-r" style="width:auto; padding:10px; margin:0;" onclick="eliminarCategoriaGasto(${index})">✕</button>
+        </div>`;
+    });
+    cont.innerHTML = html;
+}
+
+function agregarCategoriaGasto() {
+    guardarValoresCategoriasEnMemoria();
+    state.categoriasGastos.push({ id: Date.now(), name: "Nueva Categoría", amount: 0 });
+    renderCategoriasGastos();
+}
+
+function actualizarNombreCat(index, val) {
+    state.categoriasGastos[index].name = val;
+}
+
+function eliminarCategoriaGasto(index) {
+    guardarValoresCategoriasEnMemoria();
+    state.categoriasGastos.splice(index, 1);
+    renderCategoriasGastos();
+    calcularPayslip();
+}
+
+function guardarValoresCategoriasEnMemoria() {
+    if (!state.categoriasGastos) return;
+    state.categoriasGastos.forEach((cat, index) => {
+        let inputElem = document.getElementById(`cat_amt_${index}`);
+        if (inputElem) {
+            cat.amount = parseNum(inputElem.value);
+        }
+    });
 }
 
 function doCheckIn(s) {
@@ -283,6 +360,10 @@ function renderProyectos() {
                 <strong>${p.name}</strong><br>
                 <span style="font-size:.75rem">Progreso: ${formatMoney(p.current)} / ${formatMoney(p.goal)} (${pct}%)</span>
                 <div class="p-bg"><div class="p-fill" style="width:${pct}%"></div></div>
+                <div style="display:flex; gap:6px; margin-top:6px;">
+                    <input type="text" inputmode="numeric" id="inputDirectProj_${p.id}" placeholder="Aporte directo ($)" style="margin-bottom:0; flex:1;">
+                    <button class="btn btn-g" style="width:auto; margin-bottom:0;" onclick="aporteDirectoProyecto(${p.id})">SUMAR</button>
+                </div>
                 ${p.current >= p.goal ? `<button class="btn btn-r" onclick="concretarProyecto(${p.id})" style="margin-top:6px">✨ CONCRETAR Y ARCHIVAR</button>` : ''}
             </div>`;
         });
@@ -302,6 +383,17 @@ function renderProyectos() {
     }
 }
 
+function aporteDirectoProyecto(id) {
+    let monto = parseNum(document.getElementById(`inputDirectProj_${id}`).value);
+    if (monto <= 0) return alert('Ingresa un monto válido.');
+    let p = state.proyectos.find(x => x.id === id);
+    if (p) {
+        p.current += monto;
+        updateUI();
+        alert(`Aporte directo de ${formatMoney(monto)} registrado a "${p.name}".`);
+    }
+}
+
 function actualizarSelectProyectos() {
     let sel = document.getElementById('selectProyectoDist');
     if (!sel) return;
@@ -314,20 +406,29 @@ function actualizarSelectProyectos() {
 }
 
 function calcularPayslip() {
+    guardarValoresCategoriasEnMemoria();
     let sueldo = parseNum(document.getElementById('inputPayslipSueldo').value);
-    let costos = parseNum(document.getElementById('inputPayslipCostos').value);
-    currentExcedente = sueldo - costos;
-    document.getElementById('excedenteVal').innerText = formatMoney(currentExcedente);
     
-    if (currentExcedente < 0) {
-        alert("⚠️ ATENCIÓN: Déficit de caja (excedente negativo). Estás operando en números rojos (deuda).");
-        document.getElementById('distribucionContainer').style.display = 'none';
-    } else {
-        document.getElementById('distribucionContainer').style.display = 'block';
+    let totalCompromisos = 0;
+    if (state.categoriasGastos) {
+        state.categoriasGastos.forEach(cat => {
+            totalCompromisos += Number(cat.amount || 0);
+        });
     }
+    
+    currentExcedente = sueldo - totalCompromisos;
+    document.getElementById('excedenteVal').innerText = formatMoney(currentExcedente);
 }
 
 function ejecutarDistribucion() {
+    guardarValoresCategoriasEnMemoria();
+    let sueldo = parseNum(document.getElementById('inputPayslipSueldo').value);
+    let totalCompromisos = 0;
+    if (state.categoriasGastos) {
+        state.categoriasGastos.forEach(cat => totalCompromisos += Number(cat.amount || 0));
+    }
+    currentExcedente = sueldo - totalCompromisos;
+
     let aBS3 = parseNum(document.getElementById('distBS3').value);
     let aAcciones = parseNum(document.getElementById('distAcciones').value);
     let aFuturos = parseNum(document.getElementById('distFuturos').value);
@@ -340,7 +441,7 @@ function ejecutarDistribucion() {
     }
 
     if (aFuturos > 0) {
-        if (!confirm("⚠️ RECORDATORIO PROFESIONAL: Estás ingresando capital a la cuenta ofensiva de futuros. Recuerda: operar con riesgo controlado, no apostar por desesperación o aburrimiento. ¿Continuar?")) {
+        if (!confirm("⚠️ RECORDATORIO PROFESIONAL: Estás asignando capital a especulación. Recuerda: es más importante cuidar el capital actual que arriesgarlo por ir tras más. ¿Continuar?")) {
             return;
         }
     }
@@ -354,19 +455,79 @@ function ejecutarDistribucion() {
         if (p) p.current += aProj;
     }
 
-    // Limpiar inputs de distribución
-    document.getElementById('inputPayslipSueldo').value = '';
-    document.getElementById('inputPayslipCostos').value = '';
+    // Registrar en historial para gráficas
+    if (!state.history) state.history = [];
+    state.history.push({
+        date: new Date().toLocaleDateString('es-CA'),
+        bs3: state.bs3Current,
+        acciones: state.accionesTotal,
+        futuros: state.futurosTotal
+    });
+
+    // Limpiar campos de distribución
     document.getElementById('distBS3').value = '';
     document.getElementById('distAcciones').value = '';
     document.getElementById('distFuturos').value = '';
     document.getElementById('distProyectoMonto').value = '';
     document.getElementById('selectProyectoDist').value = '';
-    document.getElementById('distribucionContainer').style.display = 'none';
-    document.getElementById('excedenteVal').innerText = '$0';
 
     updateUI();
-    alert('¡Distribución quincenal ejecutada con éxito y registrada en el libro mayor!');
+    alert('¡Distribución quincenal registrada con éxito en el libro mayor!');
+}
+
+function dibujarGrafica() {
+    let canvas = document.getElementById('evolutionChart');
+    if (!canvas) return;
+    let ctx = canvas.getContext('2d');
+    canvas.width = canvas.parentElement.clientWidth - 28;
+    canvas.height = 180;
+    
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    let history = state.history || [];
+    if (history.length === 0) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '12px monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Sin registros históricos aún. Ejecuta tu primer Payslip.', canvas.width / 2, canvas.height / 2);
+        return;
+    }
+
+    let maxVal = 100;
+    history.forEach(h => {
+        maxVal = Math.max(maxVal, h.bs3, h.acciones, h.futuros);
+    });
+
+    let padding = 30;
+    let w = canvas.width - padding * 2;
+    let h = canvas.height - padding * 2;
+
+    function getX(i) {
+        if (history.length === 1) return padding + w / 2;
+        return padding + (i / (history.length - 1)) * w;
+    }
+
+    function getY(val) {
+        return canvas.height - padding - (val / maxVal) * h;
+    }
+
+    // Dibujar líneas
+    function drawLine(key, color) {
+        ctx.beginPath();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        history.forEach((item, i) => {
+            let x = getX(i);
+            let y = getY(item[key]);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+    }
+
+    drawLine('bs3', '#f59e0b');      // BS3: Amber
+    drawLine('acciones', '#10b981'); // Acciones: Green
+    drawLine('futuros', '#3b82f6');  // Futuros: Blue
 }
 
 function concretarProyecto(id) {
@@ -374,11 +535,28 @@ function concretarProyecto(id) {
     if (p) { p.status = 'archivado'; updateUI(); alert(`¡Proyecto "${p.name}" concretado y archivado!`); }
 }
 
+function resetearEstado() {
+    if (confirm("⚠️ ¿Estás seguro de que deseas reiniciar la terminal a CERO? Se borrará todo el historial y acumulados.")) {
+        localStorage.removeItem('budget_salinas_state');
+        state = { 
+            streak: 0, metaBS3: 0, gastosMensuales: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0, 
+            proyectos: [], dailyLogs: [], history: [],
+            categoriasGastos: [
+                { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
+                { id: 2, name: "Supermercado", amount: 0 },
+                { id: 3, name: "Transporte / Bencina", amount: 0 }
+            ] 
+        };
+        updateUI();
+        alert('Terminal reiniciada a cero.');
+    }
+}
+
 function exportarBackup() {
     let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
     let a = document.createElement('a');
     a.setAttribute("href", dataStr);
-    a.setAttribute("download", `gato_colocolo_backup_${new Date().toLocaleDateString('es-CA')}.json`);
+    a.setAttribute("download", `budget_salinas_backup_${new Date().toLocaleDateString('es-CA')}.json`);
     a.click();
 }
 
