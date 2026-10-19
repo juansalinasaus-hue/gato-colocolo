@@ -2,942 +2,402 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gato Colocolo - Terminal Financiera (AUD)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Gato Colocolo - Terminal Financiera</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0e1111">
     <style>
         :root {
-            --bg-color: #0a0a0c;
-            --card-bg: #131318;
-            --accent-green: #10b981;
-            --accent-red: #ef4444;
-            --accent-amber: #f59e0b;
-            --accent-blue: #3b82f6;
-            --text-main: #e2e8f0;
-            --text-muted: #94a3b8;
-            --border-color: #27272a;
+            --bg: #0e1111;
+            --surface: #181c1f;
+            --surface-border: #2a3238;
+            --text: #e2e8f0;
+            --mut: #94a3b8;
+            --amber: #f59e0b;
+            --green: #10b981;
+            --red: #ef4444;
+            --blue: #3b82f6;
         }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            font-family: monospace, system-ui, -apple-system, sans-serif;
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
+            margin: 0; padding: 0;
+            background-color: var(--bg); color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+            height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
         }
-
         header {
-            padding: 14px;
-            text-align: center;
-            border-bottom: 1px solid var(--border-color);
-            background: #0d0d11;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            padding: 12px 16px; background: var(--surface); border-bottom: 1px solid var(--surface-border);
+            display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold;
         }
-
-        .title {
-            color: var(--accent-amber);
-            font-weight: bold;
-            font-size: 1.1rem;
-            margin: 0;
-            letter-spacing: 1px;
+        .main {
+            flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px;
         }
-
-        .status-badge {
-            font-size: 0.7rem;
-            color: var(--accent-green);
-            margin-top: 3px;
-        }
-
-        .gato-avatar-box {
-            width: 75px;
-            height: 75px;
-            margin: 8px auto;
-            transition: transform 0.3s ease;
-        }
-
-        .gato-avatar-box.celebrate {
-            animation: bounce 0.6s ease infinite alternate;
-        }
-
-        @keyframes bounce {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-8px); }
-        }
-
-        .main-container {
-            flex: 1;
-            padding: 16px;
-            padding-bottom: 85px;
-            max-width: 600px;
-            margin: 0 auto;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
-
+        .tab { display: none; }
+        .tab.active { display: block; }
         .card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            padding: 14px;
-            margin-bottom: 14px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            background: var(--surface); border: 1px solid var(--surface-border);
+            border-radius: 8px; padding: 14px; margin-bottom: 12px;
         }
-
-        .banner-alert {
-            background-color: #451a03;
-            border: 1px solid var(--accent-amber);
-            color: #fef3c7;
-            padding: 12px;
-            border-radius: 8px;
-            margin-bottom: 14px;
-            font-size: 0.8rem;
-            display: none;
-            cursor: pointer;
+        .big-m { font-size: 2rem; font-weight: bold; color: var(--amber); margin: 6px 0; }
+        input, textarea, select {
+            width: 100%; background: #0b0d0e; border: 1px solid var(--surface-border);
+            color: var(--text); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 8px;
         }
-
-        .metric-big {
-            font-size: 2.6rem;
-            font-weight: bold;
-            color: var(--accent-green);
-            text-align: center;
-            margin: 4px 0;
-        }
-
+        input:focus, textarea:focus { outline: 1px solid var(--amber); }
         .btn {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 8px;
-            font-family: inherit;
-            transition: transform 0.1s, filter 0.2s;
+            width: 100%; border: none; padding: 10px; border-radius: 6px;
+            font-weight: bold; font-size: 0.85rem; cursor: pointer; margin-bottom: 6px;
         }
-
-        .btn:active { transform: scale(0.98); }
-        .btn-green { background-color: #065f46; color: #a7f3d0; }
-        .btn-red { background-color: #7f1d1d; color: #fecaca; }
-        .btn-blue { background-color: #1e3a8a; color: #bfdbfe; }
-        .btn-amber { background-color: #78350f; color: #fef3c7; }
-
-        .progress-bar-bg {
-            background-color: #27272a;
-            border-radius: 8px;
-            height: 14px;
-            width: 100%;
-            overflow: hidden;
-            margin: 10px 0;
-        }
-
-        .progress-bar-fill {
-            background-color: var(--accent-green);
-            height: 100%;
-            width: 0%;
-            transition: width 0.3s;
-        }
-
-        input, textarea {
-            width: 100%;
-            padding: 10px;
-            background: #18181b;
-            border: 1px solid var(--border-color);
-            color: #fff;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-            font-family: inherit;
-        }
-
-        .accordion-btn {
-            background-color: #1c1c24;
-            color: var(--text-main);
-            cursor: pointer;
-            padding: 12px;
-            width: 100%;
-            text-align: left;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 0.8rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 8px;
-        }
-
-        .accordion-content {
-            padding: 12px;
-            display: none;
-            background-color: #111116;
-            border: 1px solid var(--border-color);
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            margin-bottom: 8px;
-        }
-
-        canvas {
-            width: 100%;
-            height: 160px;
-            background: #0d0d11;
-            border-radius: 8px;
-            border: 1px solid var(--border-color);
-            margin-top: 6px;
-        }
-
+        .btn-g { background: var(--green); color: #000; }
+        .btn-r { background: var(--red); color: #fff; }
+        .btn-b { background: var(--blue); color: #fff; }
+        .btn-a { background: var(--amber); color: #000; }
         nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background-color: #09090b;
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0;
-            max-width: 600px;
-            margin: 0 auto;
+            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: var(--surface); border-top: 1px solid var(--surface-border);
+            display: flex; justify-content: space-around; align-items: center; z-index: 100;
         }
-
-        .nav-item {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 0.75rem;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
+        .nav-i {
+            background: none; border: none; color: var(--mut); font-size: 0.7rem;
+            display: flex; flex-direction: column; align-items: center; cursor: pointer; flex: 1;
         }
-
-        .nav-item.active {
-            color: var(--accent-green);
-            font-weight: bold;
+        .nav-i.active { color: var(--amber); }
+        .nav-i span:first-child { font-size: 1.1rem; margin-bottom: 2px; }
+        .p-bg { width: 100%; background: #0b0d0e; height: 8px; border-radius: 4px; overflow: hidden; margin: 8px 0; }
+        .p-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s; }
+        .acc-btn {
+            width: 100%; background: var(--surface); border: 1px solid var(--surface-border);
+            color: var(--text); padding: 10px; text-align: left; font-size: 0.8rem; font-weight: bold;
+            border-radius: 6px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between;
         }
-
-        .munger-card {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            background: #181820;
-            padding: 10px;
-            border-radius: 8px;
-            border: 1px solid #2e2e38;
-        }
-
-        .munger-icon {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            background: #27272a;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: 1px solid var(--accent-amber);
-        }
+        .acc-content { display: none; padding: 8px 0; }
+        label { font-size: 0.75rem; color: var(--mut); display: block; margin-bottom: 4px; }
     </style>
 </head>
 <body>
 
-    <header>
-        <p class="title">SIN CAER EN LA IDIOTEZ</p>
-        <div class="status-badge" id="headerStatus">● TERMINAL AUDITADA V1.0 | AUD ($)</div>
-    </header>
+<header>
+    <span>🐱 GATO COLOCOLO</span>
+    <span style="color:var(--green)">● TERMINAL SOBERANA</span>
+</header>
 
-    <div class="main-container">
-        
-        <!-- BANNER ALERTA DÍAS PENDIENTES -->
-        <div id="pendingBanner" class="banner-alert" onclick="openPuestaAlDiaAuto()">
-            ⚠️ <strong>¡ATENCIÓN!</strong> Tienes el registro de ayer pendiente. Toca aquí para ingresarlo de inmediato.
+<div class="main">
+    <!-- PESTAÑA 1: RACHA -->
+    <div id="tab1" class="tab active">
+        <div class="card" style="text-align:center">
+            <span style="font-size:.7rem;color:var(--mut)">RACHA DE SOBRIEDAD PATRIMONIAL</span>
+            <div class="big-m" id="streakVal">0</div>
+            <span style="font-size:.7rem;color:var(--amber)">MANTÉN TU POSICIÓN</span>
         </div>
-
-        <!-- PESTAÑA 1: 🔥 RACHA & CHECK-IN -->
-        <div id="tab1" class="tab-content active">
-            <div class="card" style="text-align: center;">
-                <div class="gato-avatar-box" id="gatoAvatar">
-                    <svg viewBox="0 0 100 100" width="100%" height="100%">
-                        <polygon points="20,35 32,10 45,30" fill="#f59e0b" />
-                        <polygon points="80,35 68,10 55,30" fill="#f59e0b" />
-                        <circle cx="50" cy="50" r="35" fill="#1e1e24" stroke="#f59e0b" stroke-width="3"/>
-                        <circle cx="38" cy="45" r="5" fill="#10b981"/>
-                        <circle cx="62" cy="45" r="5" fill="#10b981"/>
-                        <polygon points="50,52 46,57 54,57" fill="#ef4444"/>
-                        <path id="bocaGato" d="M 42 62 Q 50 67 58 62" stroke="#e2e8f0" stroke-width="2" fill="none"/>
-                        <line x1="20" y1="48" x2="33" y2="50" stroke="#94a3b8" stroke-width="1.5"/>
-                        <line x1="18" y1="56" x2="33" y2="54" stroke="#94a3b8" stroke-width="1.5"/>
-                        <line x1="80" y1="48" x2="67" y2="50" stroke="#94a3b8" stroke-width="1.5"/>
-                        <line x1="82" y1="56" x2="67" y2="54" stroke="#94a3b8" stroke-width="1.5"/>
-                    </svg>
-                </div>
-                <span style="font-size:0.75rem; color:var(--text-muted);">RACHA DE SOBRIEDAD</span>
-                <div class="metric-big" id="streakVal">0</div>
-                <span style="font-size:0.7rem; color:var(--text-muted);" id="gatoStatusText">MANTÉN TU POSICIÓN</span>
-            </div>
-
-            <div class="card">
-                <p style="margin-top:0; font-size:0.85rem; font-weight:bold;">CHECK-IN DIARIO OPERATIVO</p>
-                <label style="font-size:0.75rem;">Gasto Total de Hoy ($ AUD):</label>
-                <input type="number" id="inputGastoHoy" placeholder="Ej: 50">
-                
-                <label style="font-size:0.75rem;">Detalle Libre (Micro-gastos):</label>
-                <textarea id="inputDetalleHoy" rows="2" placeholder="Ej: 15 café y snack, 35 super"></textarea>
-
-                <button class="btn btn-green" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO (SÍ)</button>
-                <button class="btn btn-red" onclick="doCheckIn(false)">ME PASÉ DEL LÍMITE (NO)</button>
-            </div>
-
-            <!-- ACORDEÓN 1: EL ANCLA DE MUNGER -->
-            <button class="accordion-btn" onclick="toggleAccordion('accMunger')">
-                <span>🏛️ EL ANCLA DE CHARLIE MUNGER</span> <span>▼</span>
-            </button>
-            <div id="accMunger" class="accordion-content">
-                <div class="munger-card">
-                    <div class="munger-icon">
-                        <svg viewBox="0 0 50 50" width="30" height="30">
-                            <circle cx="16" cy="25" r="9" fill="none" stroke="#f59e0b" stroke-width="2"/>
-                            <circle cx="34" cy="25" r="9" fill="none" stroke="#f59e0b" stroke-width="2"/>
-                            <line x1="25" y1="25" x2="25" y2="25" stroke="#f59e0b" stroke-width="3"/>
-                            <line x1="7" y1="23" x2="2" y2="20" stroke="#f59e0b" stroke-width="2"/>
-                            <line x1="43" y1="23" x2="48" y2="20" stroke="#f59e0b" stroke-width="2"/>
-                        </svg>
-                    </div>
-                    <div>
-                        <p style="font-size:0.8rem; color:#f59e0b; font-style:italic; margin:0;" id="mungerQuote">"Cargando sabiduría..."</p>
-                        <p style="font-size:0.65rem; color:var(--text-muted); margin:4px 0 0 0; text-align:right;">— Charlie Munger</p>
-                    </div>
-                </div>
-                <button class="btn btn-blue" style="font-size:0.7rem; padding:6px; margin-top:10px;" onclick="nextMungerQuote()">OTRA FRASE</button>
-            </div>
-
-            <!-- ACORDEÓN 2: PUESTA AL DÍA -->
-            <button class="accordion-btn" id="btnAccPuestaAlDia" onclick="toggleAccordion('accPuestaAlDia')">
-                <span>🗓️ VERIFICAR DÍAS PENDIENTES</span> <span>▼</span>
-            </button>
-            <div id="accPuestaAlDia" class="accordion-content">
-                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:0;">Si olvidaste registrar días anteriores, ingresa la fecha y el gasto aquí:</p>
-                <input type="date" id="inputFechaPendiente">
-                <input type="number" id="inputGastoPendiente" placeholder="Gasto real de ese día ($ AUD)">
-                <button class="btn btn-amber" onclick="registrarDiaPendiente()">REGISTRAR DÍA HISTÓRICO</button>
-            </div>
+        <div class="card">
+            <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">CHECK-IN DIARIO</p>
+            <input type="text" inputmode="numeric" id="inputGastoHoy" placeholder="Gasto de Hoy ($ e.g. 5.000)">
+            <textarea id="inputDetalleHoy" rows="2" placeholder="Detalle (ej: pan, bip)"></textarea>
+            <button class="btn btn-g" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO (SÍ)</button>
+            <button class="btn btn-r" onclick="doCheckIn(false)">ME PASÉ / CAÍDA (NO)</button>
         </div>
-
-        <!-- PESTAÑA 2: 🎯 BABY STEP 3 -->
-        <div id="tab2" class="tab-content">
-            <div class="card">
-                <h3 style="margin-top:0; color:var(--accent-amber); font-size:1rem;">OBJETIVO: BABY STEP 3 (AUD)</h3>
-                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:-4px;">Fondo de Emergencia (Meta Declarada).</p>
-                
-                <div class="progress-bar-bg">
-                    <div id="goalProgress" class="progress-bar-fill"></div>
-                </div>
-
-                <p style="font-size:0.85rem;">Progreso Total: <strong id="pctVal">0%</strong></p>
-                <p style="font-size:0.8rem;">Ahorro Actual: <strong id="currentSaved">$0 AUD</strong></p>
-                <p style="font-size:0.8rem;">Meta Declarada: <strong id="targetVal">$0 AUD</strong></p>
-                <p style="font-size:0.8rem;">Monto Faltante: <strong id="remainingVal">$0 AUD</strong></p>
-                <hr style="border-color:var(--border-color);">
-                <p style="font-size:0.8rem; color:var(--accent-green);">Payslips (Quincenas) Restantes: <strong id="payslipsVal">0</strong></p>
-                <p style="font-size:0.8rem; color:var(--accent-amber);">Fecha Estimada: <br><strong id="targetDateVal">Sin definir</strong></p>
-            </div>
+        <button class="acc-btn" onclick="toggleAcc('accMunger')">🏛️ ANCLA DE DISCIPLINA <span>▼</span></button>
+        <div id="accMunger" class="acc-content">
+            <div class="card"><p style="font-size:.75rem;color:var(--amber);font-style:italic;margin:0" id="mungerQuote">"Cargando..."</p></div>
         </div>
-
-        <!-- PESTAÑA 3: 📈 TERMINAL EQUITY & DELTAS -->
-        <div id="tab3" class="tab-content">
-            <div class="card">
-                <h4 style="margin:0 0 6px 0; font-size:0.9rem;">EQUITY CURVE HISTÓRICA COMPLETA</h4>
-                <canvas id="chartCanvas"></canvas>
-                <p style="font-size:0.7rem; color:var(--text-muted); margin-top:6px;" id="chartStats">Sin suficientes datos.</p>
-            </div>
-
-            <!-- ACORDEÓN 1: TERMINAL DE DELTAS -->
-            <button class="accordion-btn" onclick="toggleAccordion('accDeltas')">
-                <span>📊 TERMINAL DE DELTAS (ÚLTIMOS PERIODOS)</span> <span>▼</span>
-            </button>
-            <div id="accDeltas" class="accordion-content">
-                <p style="font-size:0.75rem; margin-top:0;">Deltas de Ahorro Neto Quincenal (AUD):</p>
-                <div id="deltasContainer" style="font-size:0.75rem;">Sin periodos cerrados.</div>
-            </div>
-
-            <!-- ACORDEÓN 2: BITÁCORA DE CAÍDAS -->
-            <button class="accordion-btn" onclick="toggleAccordion('accCaidas')">
-                <span>🚨 REGISTRAR EXTRACCIÓN O CAÍDA</span> <span>▼</span>
-            </button>
-            <div id="accCaidas" class="accordion-content">
-                <label style="font-size:0.75rem;">Monto Retirado de Ahorros ($ AUD):</label>
-                <input type="number" id="inputMontoCaida" placeholder="Ej: 200">
-                <label style="font-size:0.75rem;">Motivo / Destino de la Caída:</label>
-                <input type="text" id="inputMotivoCaida" placeholder="Ej: Impulso, Emergencia">
-                <button class="btn btn-red" onclick="registrarCaida()">REGISTRAR RETIRO EN BITÁCORA</button>
-            </div>
-
-            <!-- ACORDEÓN 3: HISTORIAL COMPLETO -->
-            <button class="accordion-btn" onclick="toggleAccordion('accHistorial')">
-                <span>📜 HISTORIAL COMPLETO DE REGISTROS</span> <span>▼</span>
-            </button>
-            <div id="accHistorial" class="accordion-content">
-                <div id="historyLogContainer" style="font-size:0.7rem; max-height:150px; overflow-y:auto;">Sin registros.</div>
-            </div>
-        </div>
-
-        <!-- PESTAÑA 4: ⚙️ PAYSLIP & AJUSTES -->
-        <div id="tab4" class="tab-content">
-            <div class="card">
-                <h3 style="margin-top:0; font-size:1rem; color:var(--accent-blue);">CIERRE Y APERTURA DE PAYSLIP</h3>
-                <p style="font-size:0.75rem; color:var(--text-muted);" id="payslipStatusMsg">Ciclo activo.</p>
-                
-                <p style="font-size:0.8rem; margin-bottom:4px;">Excedente Neto Acumulado: <strong id="excedenteQuincenalVal">$0 AUD</strong></p>
-                <button class="btn btn-green" onclick="ejecutarRitualCierre()">EJECUTAR RITUAL DE CIERRE</button>
-            </div>
-
-            <!-- ACORDEÓN 1: PARÁMETROS BASE -->
-            <button class="accordion-btn" onclick="toggleAccordion('accParams')">
-                <span>🛠️ PARÁMETROS FINANCIEROS BASE (AUD)</span> <span>▼</span>
-            </button>
-            <div id="accParams" class="accordion-content">
-                <label style="font-size:0.75rem;">Ahorro Actual Acumulado ($ AUD):</label>
-                <input type="number" id="inputAhorroCurrent" placeholder="Capital inicial en tu banco AUD">
-
-                <label style="font-size:0.75rem;">Meta Total Deseada ($ AUD):</label>
-                <input type="number" id="inputMeta" placeholder="Ej: 12000">
-
-                <label style="font-size:0.75rem;">Gastos Fijos Quincenales ($ AUD):</label>
-                <input type="number" id="inputGastos" placeholder="Ej: 800">
-
-                <label style="font-size:0.75rem;">Ahorro Base por Payslip ($ AUD):</label>
-                <input type="number" id="inputAhorroQuincenal" placeholder="Ej: 500">
-
-                <label style="font-size:0.75rem;">Presupuesto Diario Objetivo ($ AUD):</label>
-                <input type="number" id="inputPresupuestoDiario" placeholder="Ej: 40">
-
-                <button class="btn btn-blue" onclick="saveParams()">GUARDAR PARÁMETROS</button>
-            </div>
-
-            <!-- ACORDEÓN 2: OVERRIDE DE FECHA -->
-            <button class="accordion-btn" onclick="toggleAccordion('accOverride')">
-                <span>📅 AJUSTAR FECHA PRÓXIMO PAGO</span> <span>▼</span>
-            </button>
-            <div id="accOverride" class="accordion-content">
-                <label style="font-size:0.75rem;">Fecha del Próximo Payslip:</label>
-                <input type="date" id="inputFechaPago">
-                <button class="btn btn-blue" onclick="saveFechaPago()">ACTUALIZAR FECHA</button>
-            </div>
-
-            <!-- ACORDEÓN 3: NOTIFICACIONES Y BACKUP -->
-            <button class="accordion-btn" onclick="toggleAccordion('accBackup')">
-                <span>🔔 ALERTAS Y COPIA DE SEGURIDAD</span> <span>▼</span>
-            </button>
-            <div id="accBackup" class="accordion-content">
-                <button class="btn btn-amber" onclick="requestNotificationPermission()">ACTIVAR RECORDATORIO DIARIO (21:30 HRS)</button>
-                <hr style="border-color:var(--border-color); margin:12px 0;">
-                <button class="btn btn-blue" onclick="exportarBackup()">EXPORTAR BACKUP (JSON)</button>
-                <div style="margin-top:10px;">
-                    <label style="font-size:0.75rem;">Importar Backup (JSON):</label>
-                    <input type="file" id="inputImportBackup" accept=".json" onchange="importarBackup(event)">
-                </div>
-            </div>
-        </div>
-
     </div>
 
-    <nav>
-        <button class="nav-item active" onclick="switchTab(1)">
-            <span>🔥</span><span>Racha</span>
-        </button>
-        <button class="nav-item" onclick="switchTab(2)">
-            <span>🎯</span><span>BS3</span>
-        </button>
-        <button class="nav-item" onclick="switchTab(3)">
-            <span>📈</span><span>Equity</span>
-        </button>
-        <button class="nav-item" onclick="switchTab(4)">
-            <span>⚙️</span><span>Payslip</span>
-        </button>
-    </nav>
+    <!-- PESTAÑA 2: BS3 (FONDO DE EMERGENCIA) -->
+    <div id="tab2" class="tab">
+        <div class="card">
+            <h3 style="margin:0;color:var(--amber);font-size:.9rem">🎯 BABY STEP 3 (ESCUDO DEFENSIVO)</h3>
+            <div class="p-bg"><div id="goalProgress" class="p-fill"></div></div>
+            <p style="font-size:.75rem;margin:4px 0">Progreso: <strong id="pctVal">0%</strong></p>
+            <p style="font-size:.75rem;margin:4px 0">Actual: <strong id="currentSaved">$0</strong> / Meta (6 meses): <strong id="targetVal">$0</strong></p>
+            <span style="font-size:.75rem;color:var(--mut);margin-top:8px;display:block">* El fondo de emergencia se alimenta exclusivamente de forma consciente durante la Apertura Quincenal (Payslip).</span>
+        </div>
+    </div>
 
-    <script>
-        const MUNGER_QUOTES = [
-            "El gran dinero no está en la compra o la venta, sino en la espera.",
-            "La gente quiere hacerse rica rápido. Es muy difícil convencer a alguien de que se vuelva rico despacio.",
-            "Saber lo que no sabes es más útil que ser brillante.",
-            "La primera regla de la acumulación es nunca interrumpirla innecesariamente.",
-            "Se requiere una gran cantidad de aburrimiento para lograr el éxito a largo plazo.",
-            "Reconocer tu propia ignorancia es el comienzo de la sabiduría.",
-            "Toma una idea simple y tómala en serio.",
-            "El hábito de postergar la gratificación es la herramienta definitiva para la libertad.",
-            "No hay nada que enseñe mejor que la amargura de un error registrado con honestidad.",
-            "Es sorprendente la ventaja que obtienen las personas que simplemente intentan no ser estúpidas."
-        ];
+    <!-- PESTAÑA 3: ACCIONES & FUTUROS -->
+    <div id="tab3" class="tab">
+        <div class="card">
+            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟢 CUENTA DE ACCIONES (AUD)</h4>
+            <p style="font-size:.75rem">Total Aportado Histórico: <strong id="accAcciones">$0</strong></p>
+            <span style="font-size:.75rem;color:var(--mut)">* Registro de capital soberano inyectado vía Payslip. Sin retiros previstos a corto plazo.</span>
+        </div>
+        <div class="card">
+            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟡 CUENTA DE FUTUROS (USD - NINJA TRADER)</h4>
+            <p style="font-size:.75rem">Total Histórico Enviado: <strong id="accFuturos">$0</strong></p>
+            <span style="font-size:.75rem;color:var(--mut)">* Capital ofensivo de riesgo controlado. Asignado exclusivamente desde la Apertura Quincenal.</span>
+        </div>
+    </div>
 
-        function getDeviceTimeZone() {
-            try {
-                return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
-            } catch(e) {
-                return 'UTC';
-            }
-        }
+    <!-- PESTAÑA 4: PROYECTOS DE VIDA (SINKING FUNDS) -->
+    <div id="tab4" class="tab">
+        <div class="card">
+            <h3 style="margin:0;font-size:.9rem;color:var(--blue)">🧳 PROYECTOS DE VIDA ACTIVOS</h3>
+            <input type="text" id="inputProjName" placeholder="Nombre (ej. Skydiving, Ropa)">
+            <input type="text" inputmode="numeric" id="inputProjGoal" placeholder="Meta Total ($)">
+            <button class="btn btn-b" onclick="crearProyecto()">CREAR PROYECTO</button>
+        </div>
+        <div id="proyectosContainer"></div>
+        <button class="acc-btn" onclick="toggleAcc('accArchivados')">📜 PROYECTOS CONCRETADOS (HISTORIAL) <span>▼</span></button>
+        <div id="accArchivados" class="acc-content"><div id="archivadosContainer"></div></div>
+    </div>
 
-        function fmtAUD(num) {
-            return '$' + Number(num || 0).toLocaleString('en-AU') + ' AUD';
-        }
-
-        function sanitizeState(s) {
-            if (!s || typeof s !== 'object') s = {};
-            return {
-                streak: Number(s.streak) || 0,
-                metaExplicit: Number(s.metaExplicit) || 0,
-                gastosQuincenales: Number(s.gastosQuincenales) || 0,
-                ahorroCurrent: Number(s.ahorroCurrent) || 0,
-                ahorroPayslip: Number(s.ahorroPayslip) || 0,
-                presupuestoDiario: Number(s.presupuestoDiario) || 0,
-                fechaPrimerPago: s.fechaPrimerPago || '',
-                excedenteQuincenal: Number(s.excedenteQuincenal) || 0,
-                mungerDeck: Array.isArray(s.mungerDeck) ? s.mungerDeck : [],
-                dailyLogs: Array.isArray(s.dailyLogs) ? s.dailyLogs : [],
-                history: Array.isArray(s.history) ? s.history : [],
-                deltas: Array.isArray(s.deltas) ? s.deltas : []
-            };
-        }
-
-        let state = sanitizeState(JSON.parse(localStorage.getItem('gato_state')));
-
-        function getLocalDateStr(d = new Date()) {
-            let year = d.getFullYear();
-            let month = String(d.getMonth() + 1).padStart(2, '0');
-            let day = String(d.getDate()).padStart(2, '0');
-            return `${year}-${month}-${day}`;
-        }
-
-        function setGatoEmotion(emotion) {
-            let boca = document.getElementById('bocaGato');
-            let box = document.getElementById('gatoAvatar');
-            let txt = document.getElementById('gatoStatusText');
-            if (!boca || !box) return;
-
-            box.classList.remove('celebrate');
-
-            if (emotion === 'happy') {
-                boca.setAttribute('d', 'M 40 60 Q 50 72 60 60');
-                box.classList.add('celebrate');
-                if (txt) txt.innerText = "¡GRAN PASO PATRIMONIAL!";
-            } else if (emotion === 'sad') {
-                boca.setAttribute('d', 'M 40 66 Q 50 56 60 66');
-                if (txt) txt.innerText = "SISTEMA EN RECUPERACIÓN";
-            } else {
-                boca.setAttribute('d', 'M 42 62 Q 50 67 58 62');
-                if (txt) txt.innerText = "MANTÉN TU POSICIÓN";
-            }
-        }
-
-        function toggleAccordion(id) {
-            let el = document.getElementById(id);
-            el.style.display = (el.style.display === "block") ? "none" : "block";
-        }
-
-        function openPuestaAlDiaAuto() {
-            let el = document.getElementById('accPuestaAlDia');
-            el.style.display = "block";
-            let btn = document.getElementById('btnAccPuestaAlDia');
-            if (btn) btn.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function switchTab(num) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+    <!-- PESTAÑA 5: PAYSLIP & MOTOR -->
+    <div id="tab5" class="tab">
+        <div class="card">
+            <h3 style="margin:0;font-size:.9rem;color:var(--green)">⚙️ APERTURA QUINCENAL</h3>
+            <label>Sueldo Bruto Payslip ($)</label>
+            <input type="text" inputmode="numeric" id="inputPayslipSueldo" placeholder="Ej. 1.200.000">
+            <label>Costos Fijos + Supermercado ($)</label>
+            <input type="text" inputmode="numeric" id="inputPayslipCostos" placeholder="Ej. 600.000">
+            <button class="btn btn-b" onclick="calcularPayslip()">CALCULAR EXCEDENTE</button>
+            <hr style="border:0;border-top:1px solid var(--surface-border);margin:10px 0">
+            <p style="font-size:.8rem;margin:4px 0">Excedente Libre Disponible: <strong id="excedenteVal" style="color:var(--amber)">$0</strong></p>
             
-            document.getElementById('tab' + num).classList.add('active');
-            document.querySelectorAll('.nav-item')[num - 1].classList.add('active');
+            <div id="distribucionContainer" style="display:none; margin-top:10px;">
+                <p style="font-size:.75rem;font-weight:bold;color:var(--green)">DISTRIBUCIÓN CONSCIENTE DEL EXCEDENTE</p>
+                <label>Aportar a BS3 (Fondo de Emergencia)</label>
+                <input type="text" inputmode="numeric" id="distBS3" placeholder="0">
+                <label>Aportar a Acciones (AUD)</label>
+                <input type="text" inputmode="numeric" id="distAcciones" placeholder="0">
+                <label>Aportar a Futuros (USD) ⚠️</label>
+                <input type="text" inputmode="numeric" id="distFuturos" placeholder="0">
+                <label>Aportar a un Proyecto Activo</label>
+                <select id="selectProyectoDist"><option value="">-- Seleccionar Proyecto --</option></select>
+                <input type="text" inputmode="numeric" id="distProyectoMonto" placeholder="Monto para el proyecto">
+                <button class="btn btn-g" onclick="ejecutarDistribucion()">CONFIRMAR Y DISTRIBUIR EXCEDENTE</button>
+            </div>
+        </div>
 
-            if (num === 3) setTimeout(drawChart, 100);
+        <button class="acc-btn" onclick="toggleAcc('accBackup')">💾 RESPALDO OFFLINE (JSON) <span>▼</span></button>
+        <div id="accBackup" class="acc-content">
+            <button class="btn btn-b" onclick="exportarBackup()">DESCARGAR BACKUP JSON</button>
+            <input type="file" id="inputImportBackup" accept=".json" onchange="importarBackup(event)" style="margin-top:6px">
+        </div>
+    </div>
+</div>
+
+<nav>
+    <button class="nav-i active" onclick="switchTab(1)"><span>🔥</span><span>Racha</span></button>
+    <button class="nav-i" onclick="switchTab(2)"><span>🎯</span><span>BS3</span></button>
+    <button class="nav-i" onclick="switchTab(3)"><span>📈</span><span>Capital</span></button>
+    <button class="nav-i" onclick="switchTab(4)"><span>🧳</span><span>Proyectos</span></button>
+    <button class="nav-i" onclick="switchTab(5)"><span>⚙️</span><span>Payslip</span></button>
+</nav>
+
+<script>
+const MUNGER_QUOTES = [
+    "El gran dinero no está en la compra o la venta, sino en la espera.",
+    "La primera regla de la acumulación es nunca interrumpirla innecesariamente.",
+    "Se requiere una gran cantidad de aburrimiento para lograr el éxito a largo plazo.",
+    "Toma una idea simple y tómala en serio.",
+    "El hábito de postergar la gratificación es la herramienta definitiva para la libertad."
+];
+
+let state = JSON.parse(localStorage.getItem('gato_state')) || {
+    streak: 0, metaBS3: 0, gastosMensuales: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0,
+    proyectos: [], dailyLogs: []
+};
+
+let currentExcedente = 0;
+
+function parseNum(val) {
+    if (!val) return 0;
+    let clean = String(val).replace(/\./g, '').replace(/,/g, '.');
+    return Number(clean) || 0;
+}
+
+function formatMoney(num) {
+    return '$' + Number(num || 0).toLocaleString('es-ES');
+}
+
+function toggleAcc(id) {
+    let e = document.getElementById(id);
+    e.style.display = (e.style.display === "block") ? "none" : "block";
+}
+
+function switchTab(n) {
+    document.querySelectorAll('.tab').forEach(e => e.classList.remove('active'));
+    document.querySelectorAll('.nav-i').forEach(e => e.classList.remove('active'));
+    document.getElementById('tab' + n).classList.add('active');
+    document.querySelectorAll('.nav-i')[n - 1].classList.add('active');
+}
+
+function updateUI() {
+    document.getElementById('streakVal').innerText = state.streak;
+    document.getElementById('mungerQuote').innerText = `"${MUNGER_QUOTES[Math.floor(Math.random() * MUNGER_QUOTES.length)]}"`;
+    
+    let target = state.metaBS3 > 0 ? state.metaBS3 : (state.gastosMensuales * 6);
+    let current = state.bs3Current || 0;
+    let pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
+    
+    document.getElementById('targetVal').innerText = formatMoney(target);
+    document.getElementById('currentSaved').innerText = formatMoney(current);
+    document.getElementById('pctVal').innerText = pct + '%';
+    document.getElementById('goalProgress').style.width = pct + '%';
+
+    document.getElementById('accAcciones').innerText = formatMoney(state.accionesTotal);
+    document.getElementById('accFuturos').innerText = formatMoney(state.futurosTotal);
+
+    renderProyectos();
+    actualizarSelectProyectos();
+    localStorage.setItem('gato_state', JSON.stringify(state));
+}
+
+function doCheckIn(s) {
+    let spent = parseNum(document.getElementById('inputGastoHoy').value);
+    let today = new Date().toLocaleDateString('es-CA');
+    if (!state.dailyLogs) state.dailyLogs = [];
+    state.dailyLogs.push({ date: today, spent });
+    if (s) { state.streak += 1; } else { state.streak = 0; }
+    document.getElementById('inputGastoHoy').value = '';
+    document.getElementById('inputDetalleHoy').value = '';
+    updateUI();
+    alert('Check-in registrado.');
+}
+
+function crearProyecto() {
+    let name = document.getElementById('inputProjName').value;
+    let goal = parseNum(document.getElementById('inputProjGoal').value);
+    if (!name || goal <= 0) return alert('Datos incompletos.');
+    if (!state.proyectos) state.proyectos = [];
+    state.proyectos.push({ id: Date.now(), name, goal, current: 0, status: 'activo' });
+    document.getElementById('inputProjName').value = '';
+    document.getElementById('inputProjGoal').value = '';
+    updateUI();
+}
+
+function renderProyectos() {
+    let cont = document.getElementById('proyectosContainer');
+    let archCont = document.getElementById('archivadosContainer');
+    if (!cont || !archCont) return;
+
+    let activos = (state.proyectos || []).filter(p => p.status === 'activo');
+    let archivados = (state.proyectos || []).filter(p => p.status === 'archivado');
+
+    if (activos.length === 0) {
+        cont.innerHTML = '<p style="font-size:.75rem;color:var(--mut)">Sin proyectos activos.</p>';
+    } else {
+        let html = "";
+        activos.forEach(p => {
+            let pct = Math.min(100, Math.round((p.current / p.goal) * 100));
+            html += `<div class="card">
+                <strong>${p.name}</strong><br>
+                <span style="font-size:.75rem">Progreso: ${formatMoney(p.current)} / ${formatMoney(p.goal)} (${pct}%)</span>
+                <div class="p-bg"><div class="p-fill" style="width:${pct}%"></div></div>
+                ${p.current >= p.goal ? `<button class="btn btn-r" onclick="concretarProyecto(${p.id})" style="margin-top:6px">✨ CONCRETAR Y ARCHIVAR</button>` : ''}
+            </div>`;
+        });
+        cont.innerHTML = html;
+    }
+
+    if (archivados.length === 0) {
+        archCont.innerHTML = '<p style="font-size:.75rem;color:var(--mut)">Sin proyectos concretados aún.</p>';
+    } else {
+        let archHtml = "";
+        archivados.forEach(p => {
+            archHtml += `<div class="card" style="opacity:0.7">
+                <s>${p.name}</s> — Meta: ${formatMoney(p.goal)} <span style="color:var(--green)">[CONCRETADO]</span>
+            </div>`;
+        });
+        archCont.innerHTML = archHtml;
+    }
+}
+
+function actualizarSelectProyectos() {
+    let sel = document.getElementById('selectProyectoDist');
+    if (!sel) return;
+    let activos = (state.proyectos || []).filter(p => p.status === 'activo');
+    let html = '<option value="">-- Seleccionar Proyecto --</option>';
+    activos.forEach(p => {
+        html += `<option value="${p.id}">${p.name} (Faltan ${formatMoney(p.goal - p.current)})</option>`;
+    });
+    sel.innerHTML = html;
+}
+
+function calcularPayslip() {
+    let sueldo = parseNum(document.getElementById('inputPayslipSueldo').value);
+    let costos = parseNum(document.getElementById('inputPayslipCostos').value);
+    currentExcedente = sueldo - costos;
+    document.getElementById('excedenteVal').innerText = formatMoney(currentExcedente);
+    
+    if (currentExcedente < 0) {
+        alert("⚠️ ATENCIÓN: Déficit de caja (excedente negativo). Estás operando en números rojos (deuda).");
+        document.getElementById('distribucionContainer').style.display = 'none';
+    } else {
+        document.getElementById('distribucionContainer').style.display = 'block';
+    }
+}
+
+function ejecutarDistribucion() {
+    let aBS3 = parseNum(document.getElementById('distBS3').value);
+    let aAcciones = parseNum(document.getElementById('distAcciones').value);
+    let aFuturos = parseNum(document.getElementById('distFuturos').value);
+    let projId = document.getElementById('selectProyectoDist').value;
+    let aProj = parseNum(document.getElementById('distProyectoMonto').value);
+
+    let totalAsignado = aBS3 + aAcciones + aFuturos + aProj;
+    if (totalAsignado > currentExcedente) {
+        return alert('Error: Estás intentando distribuir más dinero del excedente libre disponible.');
+    }
+
+    if (aFuturos > 0) {
+        if (!confirm("⚠️ RECORDATORIO PROFESIONAL: Estás ingresando capital a la cuenta ofensiva de futuros. Recuerda: operar con riesgo controlado, no apostar por desesperación o aburrimiento. ¿Continuar?")) {
+            return;
         }
+    }
 
-        function getNextMungerQuote() {
-            if (!state.mungerDeck || state.mungerDeck.length === 0) {
-                state.mungerDeck = Array.from(Array(MUNGER_QUOTES.length).keys()).sort(() => Math.random() - 0.5);
-            }
-            let idx = state.mungerDeck.pop();
-            localStorage.setItem('gato_state', JSON.stringify(state));
-            return MUNGER_QUOTES[idx];
-        }
+    if (aBS3 > 0) state.bs3Current = (state.bs3Current || 0) + aBS3;
+    if (aAcciones > 0) state.accionesTotal = (state.accionesTotal || 0) + aAcciones;
+    if (aFuturos > 0) state.futurosTotal = (state.futurosTotal || 0) + aFuturos;
+    
+    if (projId && aProj > 0) {
+        let p = state.proyectos.find(x => x.id == projId);
+        if (p) p.current += aProj;
+    }
 
-        function nextMungerQuote() {
-            document.getElementById('mungerQuote').innerText = `"${getNextMungerQuote()}"`;
-        }
+    // Limpiar inputs de distribución
+    document.getElementById('inputPayslipSueldo').value = '';
+    document.getElementById('inputPayslipCostos').value = '';
+    document.getElementById('distBS3').value = '';
+    document.getElementById('distAcciones').value = '';
+    document.getElementById('distFuturos').value = '';
+    document.getElementById('distProyectoMonto').value = '';
+    document.getElementById('selectProyectoDist').value = '';
+    document.getElementById('distribucionContainer').style.display = 'none';
+    document.getElementById('excedenteVal').innerText = '$0';
 
-        function checkPendingDays() {
-            let yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            let yesterdayStr = getLocalDateStr(yesterday);
+    updateUI();
+    alert('¡Distribución quincenal ejecutada con éxito y registrada en el libro mayor!');
+}
 
-            let logs = state.dailyLogs || [];
-            let hasYesterday = logs.some(l => l.date === yesterdayStr);
-            let hasOlderLog = logs.some(l => l.date < yesterdayStr);
+function concretarProyecto(id) {
+    let p = state.proyectos.find(x => x.id === id);
+    if (p) { p.status = 'archivado'; updateUI(); alert(`¡Proyecto "${p.name}" concretado y archivado!`); }
+}
 
-            let banner = document.getElementById('pendingBanner');
-            if (!hasYesterday && hasOlderLog) {
-                banner.style.display = 'block';
-                document.getElementById('inputFechaPendiente').value = yesterdayStr;
-            } else {
-                banner.style.display = 'none';
-            }
-        }
+function exportarBackup() {
+    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+    let a = document.createElement('a');
+    a.setAttribute("href", dataStr);
+    a.setAttribute("download", `gato_colocolo_backup_${new Date().toLocaleDateString('es-CA')}.json`);
+    a.click();
+}
 
-        function updateUI() {
-            let currentTZ = getDeviceTimeZone();
-            document.getElementById('headerStatus').innerText = `● TERMINAL AUDITADA V1.0 | ${currentTZ}`;
-
-            document.getElementById('streakVal').innerText = state.streak || 0;
-            
-            let target = state.metaExplicit || 0;
-            let current = state.ahorroCurrent || 0;
-            let remaining = Math.max(0, target - current);
-            let pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
-            
-            let payslipsNeeded = 0;
-            let targetDateStr = "Sin definir";
-
-            if (state.ahorroPayslip > 0 && remaining > 0) {
-                payslipsNeeded = Math.ceil(remaining / state.ahorroPayslip);
-                if (state.fechaPrimerPago) {
-                    let firstPayDate = new Date(state.fechaPrimerPago + "T12:00:00");
-                    if (!isNaN(firstPayDate.getTime())) {
-                        let finalDate = new Date(firstPayDate.getTime());
-                        finalDate.setDate(finalDate.getDate() + ((payslipsNeeded - 1) * 14));
-                        targetDateStr = finalDate.toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
-                    }
-                }
-            } else if (remaining === 0 && target > 0) {
-                targetDateStr = "¡Meta Alcanzada!";
-            }
-
-            document.getElementById('targetVal').innerText = fmtAUD(target);
-            document.getElementById('currentSaved').innerText = fmtAUD(current);
-            document.getElementById('remainingVal').innerText = fmtAUD(remaining);
-            document.getElementById('pctVal').innerText = pct + '%';
-            document.getElementById('goalProgress').style.width = pct + '%';
-            document.getElementById('payslipsVal').innerText = payslipsNeeded;
-            document.getElementById('targetDateVal').innerText = targetDateStr;
-
-            document.getElementById('excedenteQuincenalVal').innerText = fmtAUD(state.excedenteQuincenal || 0);
-
-            document.getElementById('inputAhorroCurrent').value = state.ahorroCurrent || '';
-            document.getElementById('inputMeta').value = state.metaExplicit || '';
-            document.getElementById('inputGastos').value = state.gastosQuincenales || '';
-            document.getElementById('inputAhorroQuincenal').value = state.ahorroPayslip || '';
-            document.getElementById('inputPresupuestoDiario').value = state.presupuestoDiario || '';
-            document.getElementById('inputFechaPago').value = state.fechaPrimerPago || '';
-
-            if (state.streak > 0) {
-                setGatoEmotion('happy');
-            } else if (state.history && state.history.length > 0 && state.history[state.history.length - 1].type === 'CAIDA') {
-                setGatoEmotion('sad');
-            } else {
-                setGatoEmotion('neutral');
-            }
-
-            checkPendingDays();
-            renderHistoryLogs();
-            renderDeltas();
-            drawChart();
-        }
-
-        function doCheckIn(success) {
-            let spent = Number(document.getElementById('inputGastoHoy').value) || 0;
-            let detail = document.getElementById('inputDetalleHoy').value || '';
-            let today = getLocalDateStr();
-            let currentTZ = getDeviceTimeZone();
-
-            if (!state.dailyLogs) state.dailyLogs = [];
-            
-            let existingIdx = state.dailyLogs.findIndex(l => l.date === today);
-            let limit = state.presupuestoDiario || 0;
-
-            if (existingIdx !== -1) {
-                let prevSpent = state.dailyLogs[existingIdx].spent;
-                if (limit > 0) {
-                    state.excedenteQuincenal -= (limit - prevSpent);
-                }
-                state.dailyLogs[existingIdx] = { date: today, spent: spent, detail: detail, tz: currentTZ, success: success };
-            } else {
-                state.dailyLogs.push({ date: today, spent: spent, detail: detail, tz: currentTZ, success: success });
-                if (success) {
-                    state.streak += 1;
-                } else {
-                    state.streak = 0;
-                }
-            }
-
-            if (limit > 0) {
-                let diff = limit - spent;
-                state.excedenteQuincenal = (state.excedenteQuincenal || 0) + diff;
-            }
-
-            if (success) setGatoEmotion('happy');
-            else setGatoEmotion('sad');
-
-            localStorage.setItem('gato_state', JSON.stringify(state));
-            document.getElementById('inputGastoHoy').value = '';
-            document.getElementById('inputDetalleHoy').value = '';
-            updateUI();
-            alert('Check-in registrado correctamente.');
-        }
-
-        function registrarDiaPendiente() {
-            let fecha = document.getElementById('inputFechaPendiente').value;
-            let gasto = Number(document.getElementById('inputGastoPendiente').value) || 0;
-            let currentTZ = getDeviceTimeZone();
-            if (!fecha) return alert('Selecciona una fecha válida.');
-
-            if (!state.dailyLogs) state.dailyLogs = [];
-            
-            let existingIdx = state.dailyLogs.findIndex(l => l.date === fecha);
-            let limit = state.presupuestoDiario || 0;
-
-            if (existingIdx !== -1) {
-                let prevSpent = state.dailyLogs[existingIdx].spent;
-                if (limit > 0) {
-                    state.excedenteQuincenal -= (limit - prevSpent);
-                }
-                state.dailyLogs[existingIdx] = { date: fecha, spent: gasto, detail: 'Puesta al día histórica', tz: currentTZ };
-            } else {
-                state.dailyLogs.push({ date: fecha, spent: gasto, detail: 'Puesta al día histórica', tz: currentTZ });
-            }
-
-            if (limit > 0) {
-                state.excedenteQuincenal = (state.excedenteQuincenal || 0) + (limit - gasto);
-            }
-
-            localStorage.setItem('gato_state', JSON.stringify(state));
-            updateUI();
-            alert('Día histórico registrado.');
-        }
-
-        function registrarCaida() {
-            let monto = Number(document.getElementById('inputMontoCaida').value);
-            let motivo = document.getElementById('inputMotivoCaida').value || 'Sin motivo especificado';
-            let currentTZ = getDeviceTimeZone();
-            if (!monto || monto <= 0) return alert('Ingresa un monto válido.');
-
-            state.ahorroCurrent = Math.max(0, (state.ahorroCurrent || 0) - monto);
-            state.streak = 0;
-            setGatoEmotion('sad');
-
-            let today = getLocalDateStr();
-            if (!state.history) state.history = [];
-            state.history.push({ date: today, balance: state.ahorroCurrent, type: 'CAIDA', note: motivo, tz: currentTZ });
-
-            localStorage.setItem('gato_state', JSON.stringify(state));
-            document.getElementById('inputMontoCaida').value = '';
-            document.getElementById('inputMotivoCaida').value = '';
-            updateUI();
-            alert('Retiro registrado en la Bitácora.');
-        }
-
-        function ejecutarRitualCierre() {
-            let exc = state.excedenteQuincenal || 0;
-            let currentTZ = getDeviceTimeZone();
-            let confirm = window.confirm(`Cierre de Quincena:\nExcedente neto a transferir: ${fmtAUD(exc)}.\n\n¿Ya realizaste la transferencia bancaria real a tu cuenta de ahorro AUD?`);
-            
-            if (confirm) {
-                let base = state.ahorroPayslip || 0;
-                let totalAdd = base + exc;
-                state.ahorroCurrent = (state.ahorroCurrent || 0) + totalAdd;
-
-                let today = getLocalDateStr();
-                if (!state.history) state.history = [];
-                state.history.push({ date: today, balance: state.ahorroCurrent, type: 'PAYSLIP', note: `Ahorro base ${fmtAUD(base)} + Excedente ${fmtAUD(exc)}`, tz: currentTZ });
-
-                state.excedenteQuincenal = 0;
-
-                if (state.fechaPrimerPago) {
-                    let d = new Date(state.fechaPrimerPago + "T12:00:00");
-                    d.setDate(d.getDate() + 14);
-                    state.fechaPrimerPago = getLocalDateStr(d);
-                }
-
-                setGatoEmotion('happy');
-                localStorage.setItem('gato_state', JSON.stringify(state));
+function importarBackup(event) {
+    let reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let imported = JSON.parse(e.target.result);
+            if (imported && typeof imported === 'object') {
+                state = imported;
                 updateUI();
-                alert('¡Ciclo cerrado con éxito! Nuevo periodo iniciado.');
-            } else {
-                setGatoEmotion('sad');
-                alert('GATO COLOCOLO: Mantén tu posición. Haz la transferencia en tu banco y vuelve a confirmar.');
+                alert('Backup importado con éxito.');
             }
-        }
+        } catch (err) { alert('Error al leer el archivo JSON.'); }
+    };
+    reader.readAsText(event.target.files[0]);
+}
 
-        function saveParams() {
-            let newAhorro = Number(document.getElementById('inputAhorroCurrent').value) || 0;
-            state.ahorroCurrent = newAhorro;
-            state.metaExplicit = Number(document.getElementById('inputMeta').value) || 0;
-            state.gastosQuincenales = Number(document.getElementById('inputGastos').value) || 0;
-            state.ahorroPayslip = Number(document.getElementById('inputAhorroQuincenal').value) || 0;
-            state.presupuestoDiario = Number(document.getElementById('inputPresupuestoDiario').value) || 0;
-            
-            let today = getLocalDateStr();
-            let currentTZ = getDeviceTimeZone();
-            if (!state.history || state.history.length === 0) {
-                state.history = [{ date: today, balance: newAhorro, type: 'INICIO', note: 'Ahorro base inicial declarado', tz: currentTZ }];
-            }
-
-            localStorage.setItem('gato_state', JSON.stringify(state));
-            updateUI();
-            alert('Parámetros guardados correctamente.');
-        }
-
-        function saveFechaPago() {
-            state.fechaPrimerPago = document.getElementById('inputFechaPago').value;
-            localStorage.setItem('gato_state', JSON.stringify(state));
-            updateUI();
-            alert('Fecha de pago actualizada.');
-        }
-
-        function drawChart() {
-            let canvas = document.getElementById('chartCanvas');
-            if (!canvas) return;
-            let ctx = canvas.getContext('2d');
-            canvas.width = canvas.clientWidth || 300;
-            canvas.height = canvas.clientHeight || 160;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            let hist = state.history || [];
-            if (hist.length < 1) {
-                document.getElementById('chartStats').innerText = "Sin suficientes datos para la Equity Curve.";
-                return;
-            }
-
-            let balances = hist.map(h => h.balance);
-            let min = Math.min(...balances);
-            let max = Math.max(...balances);
-            if (min === max) { max = min + 1; }
-
-            let padding = 15;
-            let w = canvas.width - (padding * 2);
-            let h = canvas.height - (padding * 2);
-
-            ctx.beginPath();
-            ctx.lineWidth = 2;
-            let lastVal = balances[balances.length - 1];
-            let prevVal = hist.length > 1 ? balances[balances.length - 2] : lastVal;
-            ctx.strokeStyle = lastVal >= prevVal ? "#10b981" : "#ef4444";
-
-            hist.forEach((pt, idx) => {
-                let x = hist.length === 1 ? canvas.width / 2 : padding + (idx / (hist.length - 1)) * w;
-                let y = (canvas.height - padding) - ((pt.balance - min) / (max - min)) * h;
-                if (idx === 0) ctx.moveTo(x, y);
-                else ctx.lineTo(x, y);
-            });
-
-            ctx.stroke();
-            document.getElementById('chartStats').innerText = `Puntos registrados: ${hist.length} | Balance Actual: ${fmtAUD(lastVal)}`;
-        }
-
-        function renderHistoryLogs() {
-            let container = document.getElementById('historyLogContainer');
-            if (!container) return;
-            let hist = state.history || [];
-            if (hist.length === 0) {
-                container.innerHTML = "Sin registros.";
-                return;
-            }
-            let html = "";
-            hist.slice().reverse().forEach(item => {
-                let color = item.type === 'CAIDA' ? 'var(--accent-red)' : 'var(--accent-green)';
-                let tzInfo = item.tz ? ` (${item.tz})` : '';
-                html += `<div style="border-bottom:1px solid #27272a; padding:4px 0;">
-                    <span style="color:${color}; font-weight:bold;">[${item.type}]</span> ${item.date}${tzInfo} - ${fmtAUD(item.balance)}<br>
-                    <span style="color:var(--text-muted);">${item.note}</span>
-                </div>`;
-            });
-            container.innerHTML = html;
-        }
-
-        function renderDeltas() {
-            let container = document.getElementById('deltasContainer');
-            if (!container) return;
-            let hist = state.history || [];
-            if (hist.length < 2) {
-                container.innerHTML = "Se requieren al menos 2 ciclos cerrados para calcular Deltas.";
-                return;
-            }
-            let html = "";
-            for (let i = Math.max(1, hist.length - 6); i < hist.length; i++) {
-                let diff = hist[i].balance - hist[i-1].balance;
-                let color = diff >= 0 ? "var(--accent-green)" : "var(--accent-red)";
-                html += `<div>${hist[i].date}: <strong style="color:${color}">${diff >= 0 ? '+' : ''}${fmtAUD(diff)}</strong></div>`;
-            }
-            container.innerHTML = html;
-        }
-
-        function requestNotificationPermission() {
-            if ("Notification" in window) {
-                Notification.requestPermission().then(permission => {
-                    if (permission === "granted") {
-                        alert("Notificaciones activadas. Recibirás un recordatorio diario a las 21:30 hrs.");
-                        scheduleDailyNotification();
-                    } else {
-                        alert("Permiso denegado. Puedes activarlo desde la configuración del navegador.");
-                    }
-                });
-            } else {
-                alert("Tu navegador no soporta notificaciones locales.");
-            }
-        }
-
-        function scheduleDailyNotification() {
-            if (!("Notification" in window) || Notification.permission !== "granted") return;
-            let now = new Date();
-            let target = new Date();
-            target.setHours(21, 30, 0, 0);
-            if (now > target) {
-                target.setDate(target.getDate() + 1);
-            }
-            let diff = target - now;
-            setTimeout(() => {
-                new Notification("🐱 Gato Colocolo", {
-                    body: "Hora de cerrar el día. Registra tu gasto diario antes de dormir."
-                });
-                scheduleDailyNotification();
-            }, diff);
-        }
-
-        function exportarBackup() {
-            let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
-            let dlAnchorElem = document.createElement('a');
-            dlAnchorElem.setAttribute("href", dataStr);
-            dlAnchorElem.setAttribute("download", `gato_colocolo_backup_${getLocalDateStr()}.json`);
-            dlAnchorElem.click();
-        }
-
-        function importarBackup(event) {
-            let reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    let imported = JSON.parse(e.target.result);
-                    if (imported && typeof imported === 'object') {
-                        state = sanitizeState(imported);
-                        localStorage.setItem('gato_state', JSON.stringify(state));
-                        updateUI();
-                        alert('Backup importado correctamente.');
-                    }
-                } catch(err) {
-                    alert('Error al leer el archivo JSON.');
-                }
-            };
-            reader.readAsText(event.target.files[0]);
-        }
-
-        document.getElementById('mungerQuote').innerText = `"${getNextMungerQuote()}"`;
-        updateUI();
-        if ("Notification" in window && Notification.permission === "granted") {
-            scheduleDailyNotification();
-        }
-    </script>
+updateUI();
+</script>
 </body>
 </html>
