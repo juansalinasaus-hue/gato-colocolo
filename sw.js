@@ -1,4 +1,4 @@
-const CACHE_NAME = 'budget-salinas-v7';
+const CACHE_NAME = 'budget-salinas-v10';
 const urlsToCache = [
   './index.html',
   './manifest.json',
