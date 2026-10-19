@@ -80,7 +80,7 @@
 
 <header>
     <span>📈 BUDGET SALINAS</span>
-    <span style="color:var(--green)">● ONLINE</span>
+    <span style="color:var(--green)">● OFFLINE READY</span>
 </header>
 
 <div class="main">
@@ -92,9 +92,13 @@
             <span style="font-size:.7rem;color:var(--amber)">MANTÉN TU POSICIÓN</span>
         </div>
         <div class="card">
-            <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">CHECK-IN DIARIO</p>
-            <input type="text" inputmode="numeric" id="inputGastoHoy" placeholder="Gasto de Hoy ($ e.g. 5.000)">
-            <textarea id="inputDetalleHoy" rows="2" placeholder="Detalle (ej: pan, bip)"></textarea>
+            <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">CHECK-IN DIARIO & AUDITORÍA</p>
+            <label>Fecha del Registro</label>
+            <input type="date" id="inputFechaCheckin">
+            <label>Monto Gastado Hoy ($)</label>
+            <input type="text" inputmode="numeric" id="inputGastoHoy" placeholder="Ej. 5.000 (0 si no hubo gasto)">
+            <label>Detalle Inesquivable</label>
+            <textarea id="inputDetalleHoy" rows="2" placeholder="En qué se fue el dinero (ej: café, almuerzo fuera)"></textarea>
             <button class="btn btn-g" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO (SÍ)</button>
             <button class="btn btn-r" onclick="doCheckIn(false)">ME PASÉ / CAÍDA (NO)</button>
         </div>
@@ -104,15 +108,22 @@
         </div>
     </div>
 
-    <!-- PESTAÑA 2: BS3 -->
+    <!-- PESTAÑA 2: BS3 (ESCUDO DEFENSIVO) -->
     <div id="tab2" class="tab">
         <div class="card">
             <h3 style="margin:0;color:var(--amber);font-size:.9rem">🎯 ESCUDO DEFENSIVO (BS3)</h3>
             <div class="p-bg"><div id="goalProgress" class="p-fill"></div></div>
             <p style="font-size:.75rem;margin:4px 0">Progreso: <strong id="pctVal">0%</strong></p>
-            <p style="font-size:.75rem;margin:4px 0">Actual: <strong id="currentSaved">$0</strong> / Meta (6 meses): <strong id="targetVal">$0</strong></p>
-            <p style="font-size:.75rem;color:var(--mut);margin-top:8px;line-height:1.4">
-                El escudo inquebrantable que otorga paz mental absoluta frente a cualquier imprevisto de la vida real. Se alimenta de forma consciente durante la Apertura Quincenal.
+            <p style="font-size:.75rem;margin:4px 0">Actual: <strong id="currentSaved">$0</strong> / Meta Soberana: <strong id="targetVal">$0</strong></p>
+            
+            <label style="margin-top:10px">Definir Meta Exacta del Escudo Defensivo ($)</label>
+            <div class="flex-row">
+                <input type="text" inputmode="numeric" id="inputMetaBS3Custom" placeholder="Ej. 3.000.000" style="margin-bottom:0; flex:1;">
+                <button class="btn btn-b" style="width:auto; margin-bottom:0;" onclick="guardarMetaBS3()">ESTABLECER</button>
+            </div>
+
+            <p style="font-size:.75rem;color:var(--mut);margin-top:10px;line-height:1.4">
+                El escudo inquebrantable definido por ti mismo. Se alimenta exclusivamente de forma consciente durante la Apertura Quincenal.
             </p>
         </div>
     </div>
@@ -139,8 +150,10 @@
     <div id="tab4" class="tab">
         <div class="card">
             <h3 style="margin:0;font-size:.9rem;color:var(--blue)">🧳 PROYECTOS DE VIDA (SINKING FUNDS)</h3>
+            <p style="font-size:.75rem;color:var(--mut);margin:4px 0 8px 0">Provisiones obligatorias de corto plazo que se apartan antes del excedente libre.</p>
             <input type="text" id="inputProjName" placeholder="Nombre (ej. Skydiving, Viaje)">
             <input type="text" inputmode="numeric" id="inputProjGoal" placeholder="Meta Total ($)">
+            <input type="text" inputmode="numeric" id="inputProjProv" placeholder="Provisión Quincenal Obligatoria ($)">
             <button class="btn btn-b" onclick="crearProyecto()">CREAR PROYECTO</button>
         </div>
         <div id="proyectosContainer"></div>
@@ -171,23 +184,25 @@
             
             <div id="categoriasGastosContainer" style="margin-bottom: 8px;"></div>
 
+            <!-- PROVISIÓN DE PROYECTOS ACTIVOS ANTES DEL EXCEDENTE -->
+            <div style="background:#0b0d0e; padding:10px; border-radius:6px; border:1px solid var(--surface-border); margin: 10px 0;">
+                <p style="font-size:.75rem;font-weight:bold;color:var(--blue);margin:0 0 6px 0">PROVISIÓN OBLIGATORIA DE PROYECTOS ACTIVOS</p>
+                <div id="provisionProyectosContainer"><span style="font-size:.75rem;color:var(--mut)">Sin proyectos activos.</span></div>
+            </div>
+
             <hr style="border:0;border-top:1px solid var(--surface-border);margin:10px 0">
-            <p style="font-size:.85rem;margin:4px 0">Excedente Libre Calculado: <strong id="excedenteVal" style="color:var(--amber)">$0</strong></p>
+            <p style="font-size:.85rem;margin:4px 0">Excedente Libre Puro (Para BS3 / Inversión): <strong id="excedenteVal" style="color:var(--amber)">$0</strong></p>
             
             <div id="distribucionContainer" style="margin-top:14px; background:#0b0d0e; padding:12px; border-radius:6px; border:1px solid var(--surface-border);">
-                <p style="font-size:.75rem;font-weight:bold;color:var(--green);margin-top:0">DISTRIBUCIÓN CONSCIENTE DEL EXCEDENTE</p>
-                <label>Aportar a BS3 (Fondo de Emergencia)</label>
+                <p style="font-size:.75rem;font-weight:bold;color:var(--green);margin-top:0">DISTRIBUCIÓN CONSCIENTE DEL EXCEDENTE PURO</p>
+                <label>Aportar a BS3 (Escudo Defensivo)</label>
                 <input type="text" inputmode="numeric" id="distBS3" placeholder="0">
-                <label>Aportar a Acciones (AUD)</label>
+                <label>Aportar a Acciones (Largo Plazo)</label>
                 <input type="text" inputmode="numeric" id="distAcciones" placeholder="0">
-                <label>Aportar a Futuros (USD) ⚠️</label>
+                <label>Aportar a Futuros (Especulativo) ⚠️</label>
                 <input type="text" inputmode="numeric" id="distFuturos" placeholder="0">
                 
-                <label style="color:var(--blue);font-weight:bold;margin-top:6px">Aportar a Proyecto Activo</label>
-                <select id="selectProyectoDist"><option value="">-- Seleccionar Proyecto --</option></select>
-                <input type="text" inputmode="numeric" id="distProyectoMonto" placeholder="Monto para el proyecto ($)">
-                
-                <button class="btn btn-g" style="margin-top:8px" onclick="ejecutarDistribucion()">CONFIRMAR Y REGISTRAR APERTURA</button>
+                <button class="btn btn-g" style="margin-top:12px" onclick="ejecutarDistribucion()">CONFIRMAR Y REGISTRAR APERTURA</button>
             </div>
         </div>
 
@@ -220,13 +235,13 @@ const MUNGER_QUOTES = [
 ];
 
 let state = JSON.parse(localStorage.getItem('budget_salinas_state')) || {
-    streak: 0, metaBS3: 0, gastosMensuales: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0,
+    metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0,
     proyectos: [], dailyLogs: [], categoriasGastos: [
         { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
         { id: 2, name: "Supermercado", amount: 0 },
         { id: 3, name: "Transporte / Bencina", amount: 0 }
     ],
-    history: [] // Historial para gráficas [{date, bs3, acciones, futuros}]
+    history: []
 };
 
 let currentExcedente = 0;
@@ -254,11 +269,52 @@ function switchTab(n) {
     if (n === 5) { dibujarGrafica(); }
 }
 
+function calcularRachaInteligente() {
+    if (!state.dailyLogs || state.dailyLogs.length === 0) return 0;
+    let logs = [...state.dailyLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
+    let uniqueLogs = {};
+    logs.forEach(l => { if (!uniqueLogs[l.date]) uniqueLogs[l.date] = l; });
+    let sortedDates = Object.keys(uniqueLogs).sort((a, b) => new Date(b) - new Date(a.date));
+    
+    let todayStr = new Date().toLocaleDateString('es-CA');
+    let latestDateStr = sortedDates[0];
+    let diffDays = Math.round((new Date(todayStr) - new Date(latestDateStr)) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays > 1) return 0;
+    
+    let streak = 0;
+    let currentDate = new Date(latestDateStr);
+    
+    for (let i = 0; i < sortedDates.length; i++) {
+        let dateStr = sortedDates[i];
+        let log = uniqueLogs[dateStr];
+        let expectedStr = currentDate.toLocaleDateString('es-CA');
+        
+        if (dateStr === expectedStr) {
+            if (log.success) {
+                streak++;
+                currentDate.setDate(currentDate.getDate() - 1);
+            } else {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
+    return streak;
+}
+
 function updateUI() {
-    document.getElementById('streakVal').innerText = state.streak;
+    let computedStreak = calcularRachaInteligente();
+    document.getElementById('streakVal').innerText = computedStreak;
     document.getElementById('mungerQuote').innerText = `"${MUNGER_QUOTES[Math.floor(Math.random() * MUNGER_QUOTES.length)]}"`;
     
-    let target = state.metaBS3 > 0 ? state.metaBS3 : (state.gastosMensuales * 6);
+    let dateInput = document.getElementById('inputFechaCheckin');
+    if (dateInput && !dateInput.value) {
+        dateInput.value = new Date().toLocaleDateString('es-CA');
+    }
+
+    let target = state.metaBS3Custom || 0;
     let current = state.bs3Current || 0;
     let pct = target > 0 ? Math.min(100, Math.round((current / target) * 100)) : 0;
     
@@ -267,13 +323,27 @@ function updateUI() {
     document.getElementById('pctVal').innerText = pct + '%';
     document.getElementById('goalProgress').style.width = pct + '%';
 
+    let metaInput = document.getElementById('inputMetaBS3Custom');
+    if (metaInput && state.metaBS3Custom > 0 && document.activeElement !== metaInput) {
+        metaInput.value = state.metaBS3Custom;
+    }
+
     document.getElementById('accAcciones').innerText = formatMoney(state.accionesTotal);
     document.getElementById('accFuturos').innerText = formatMoney(state.futurosTotal);
 
     renderProyectos();
     renderCategoriasGastos();
-    actualizarSelectProyectos();
+    renderProvisionProyectosPayslip();
+    calcularPayslip();
     localStorage.setItem('budget_salinas_state', JSON.stringify(state));
+}
+
+function guardarMetaBS3() {
+    let val = parseNum(document.getElementById('inputMetaBS3Custom').value);
+    if (val <= 0) return alert('Ingresa una meta válida mayor a cero.');
+    state.metaBS3Custom = val;
+    updateUI();
+    alert('¡Meta soberana del Escudo Defensivo actualizada!');
 }
 
 function renderCategoriasGastos() {
@@ -319,26 +389,52 @@ function guardarValoresCategoriasEnMemoria() {
     });
 }
 
-function doCheckIn(s) {
+function renderProvisionProyectosPayslip() {
+    let cont = document.getElementById('provisionProyectosContainer');
+    if (!cont) return;
+    let activos = (state.proyectos || []).filter(p => p.status === 'activo');
+    if (activos.length === 0) {
+        cont.innerHTML = '<span style="font-size:.75rem;color:var(--mut)">Sin proyectos activos.</span>';
+        return;
+    }
+    let html = "";
+    activos.forEach(p => {
+        html += `<div class="flex-row" style="margin-bottom:4px;">
+            <span style="font-size:0.75rem; flex:1;">${p.name} (Meta: ${formatMoney(p.goal)})</span>
+            <input type="text" inputmode="numeric" id="prov_proj_${p.id}" value="${p.provisionQuincenal > 0 ? p.provisionQuincenal : ''}" onkeyup="calcularPayslip()" placeholder="Provisión quincenal ($)" style="flex:1; margin-bottom:0; font-size:0.75rem; padding:6px;">
+        </div>`;
+    });
+    cont.innerHTML = html;
+}
+
+function doCheckIn(success) {
+    let fecha = document.getElementById('inputFechaCheckin').value;
+    if (!fecha) return alert('Selecciona una fecha válida.');
+    
     let spent = parseNum(document.getElementById('inputGastoHoy').value);
-    let today = new Date().toLocaleDateString('es-CA');
+    let detail = document.getElementById('inputDetalleHoy').value.trim();
     if (!state.dailyLogs) state.dailyLogs = [];
-    state.dailyLogs.push({ date: today, spent });
-    if (s) { state.streak += 1; } else { state.streak = 0; }
+    
+    state.dailyLogs = state.dailyLogs.filter(l => l.date !== fecha);
+    state.dailyLogs.push({ date: fecha, spent, detail, success });
+    
     document.getElementById('inputGastoHoy').value = '';
     document.getElementById('inputDetalleHoy').value = '';
+    
     updateUI();
-    alert('Check-in registrado.');
+    alert(`Check-in registrado para el día ${fecha} (${success ? 'Cumplido' : 'Caída'}).`);
 }
 
 function crearProyecto() {
     let name = document.getElementById('inputProjName').value;
     let goal = parseNum(document.getElementById('inputProjGoal').value);
-    if (!name || goal <= 0) return alert('Datos incompletos.');
+    let provisionQuincenal = parseNum(document.getElementById('inputProjProv').value);
+    if (!name || goal <= 0) return alert('Datos de proyecto incompletos.');
     if (!state.proyectos) state.proyectos = [];
-    state.proyectos.push({ id: Date.now(), name, goal, current: 0, status: 'activo' });
+    state.proyectos.push({ id: Date.now(), name, goal, provisionQuincenal, current: 0, status: 'activo' });
     document.getElementById('inputProjName').value = '';
     document.getElementById('inputProjGoal').value = '';
+    document.getElementById('inputProjProv').value = '';
     updateUI();
 }
 
@@ -358,7 +454,8 @@ function renderProyectos() {
             let pct = Math.min(100, Math.round((p.current / p.goal) * 100));
             html += `<div class="card">
                 <strong>${p.name}</strong><br>
-                <span style="font-size:.75rem">Progreso: ${formatMoney(p.current)} / ${formatMoney(p.goal)} (${pct}%)</span>
+                <span style="font-size:.75rem">Progreso: ${formatMoney(p.current)} / ${formatMoney(p.goal)} (${pct}%)</span><br>
+                <span style="font-size:.75rem; color:var(--blue)">Provisión quincenal: ${formatMoney(p.provisionQuincenal)}</span>
                 <div class="p-bg"><div class="p-fill" style="width:${pct}%"></div></div>
                 <div style="display:flex; gap:6px; margin-top:6px;">
                     <input type="text" inputmode="numeric" id="inputDirectProj_${p.id}" placeholder="Aporte directo ($)" style="margin-bottom:0; flex:1;">
@@ -394,17 +491,6 @@ function aporteDirectoProyecto(id) {
     }
 }
 
-function actualizarSelectProyectos() {
-    let sel = document.getElementById('selectProyectoDist');
-    if (!sel) return;
-    let activos = (state.proyectos || []).filter(p => p.status === 'activo');
-    let html = '<option value="">-- Seleccionar Proyecto --</option>';
-    activos.forEach(p => {
-        html += `<option value="${p.id}">${p.name} (Faltan ${formatMoney(p.goal - p.current)})</option>`;
-    });
-    sel.innerHTML = html;
-}
-
 function calcularPayslip() {
     guardarValoresCategoriasEnMemoria();
     let sueldo = parseNum(document.getElementById('inputPayslipSueldo').value);
@@ -415,29 +501,41 @@ function calcularPayslip() {
             totalCompromisos += Number(cat.amount || 0);
         });
     }
+
+    let activos = (state.proyectos || []).filter(p => p.status === 'activo');
+    activos.forEach(p => {
+        let inputProv = document.getElementById(`prov_proj_${p.id}`);
+        if (inputProv) {
+            p.provisionQuincenal = parseNum(inputProv.value);
+        }
+        totalCompromisos += Number(p.provisionQuincenal || 0);
+    });
     
     currentExcedente = sueldo - totalCompromisos;
     document.getElementById('excedenteVal').innerText = formatMoney(currentExcedente);
 }
 
 function ejecutarDistribucion() {
-    guardarValoresCategoriasEnMemoria();
+    calcularPayslip();
     let sueldo = parseNum(document.getElementById('inputPayslipSueldo').value);
     let totalCompromisos = 0;
     if (state.categoriasGastos) {
         state.categoriasGastos.forEach(cat => totalCompromisos += Number(cat.amount || 0));
     }
+    let activos = (state.proyectos || []).filter(p => p.status === 'activo');
+    activos.forEach(p => {
+        totalCompromisos += Number(p.provisionQuincenal || 0);
+        p.current += Number(p.provisionQuincenal || 0);
+    });
     currentExcedente = sueldo - totalCompromisos;
 
     let aBS3 = parseNum(document.getElementById('distBS3').value);
     let aAcciones = parseNum(document.getElementById('distAcciones').value);
     let aFuturos = parseNum(document.getElementById('distFuturos').value);
-    let projId = document.getElementById('selectProyectoDist').value;
-    let aProj = parseNum(document.getElementById('distProyectoMonto').value);
 
-    let totalAsignado = aBS3 + aAcciones + aFuturos + aProj;
+    let totalAsignado = aBS3 + aAcciones + aFuturos;
     if (totalAsignado > currentExcedente) {
-        return alert('Error: Estás intentando distribuir más dinero del excedente libre disponible.');
+        return alert('Error: Estás intentando distribuir más dinero del excedente libre puro disponible.');
     }
 
     if (aFuturos > 0) {
@@ -450,12 +548,6 @@ function ejecutarDistribucion() {
     if (aAcciones > 0) state.accionesTotal = (state.accionesTotal || 0) + aAcciones;
     if (aFuturos > 0) state.futurosTotal = (state.futurosTotal || 0) + aFuturos;
     
-    if (projId && aProj > 0) {
-        let p = state.proyectos.find(x => x.id == projId);
-        if (p) p.current += aProj;
-    }
-
-    // Registrar en historial para gráficas
     if (!state.history) state.history = [];
     state.history.push({
         date: new Date().toLocaleDateString('es-CA'),
@@ -464,15 +556,13 @@ function ejecutarDistribucion() {
         futuros: state.futurosTotal
     });
 
-    // Limpiar campos de distribución
     document.getElementById('distBS3').value = '';
     document.getElementById('distAcciones').value = '';
     document.getElementById('distFuturos').value = '';
-    document.getElementById('distProyectoMonto').value = '';
-    document.getElementById('selectProyectoDist').value = '';
+    document.getElementById('inputPayslipSueldo').value = '';
 
     updateUI();
-    alert('¡Distribución quincenal registrada con éxito en el libro mayor!');
+    alert('¡Apertura quincenal ejecutada! Provisiones de proyectos apartadas y excedente puro distribuido con éxito.');
 }
 
 function dibujarGrafica() {
@@ -511,7 +601,6 @@ function dibujarGrafica() {
         return canvas.height - padding - (val / maxVal) * h;
     }
 
-    // Dibujar líneas
     function drawLine(key, color) {
         ctx.beginPath();
         ctx.strokeStyle = color;
@@ -525,9 +614,9 @@ function dibujarGrafica() {
         ctx.stroke();
     }
 
-    drawLine('bs3', '#f59e0b');      // BS3: Amber
-    drawLine('acciones', '#10b981'); // Acciones: Green
-    drawLine('futuros', '#3b82f6');  // Futuros: Blue
+    drawLine('bs3', '#f59e0b');      
+    drawLine('acciones', '#10b981'); 
+    drawLine('futuros', '#3b82f6');  
 }
 
 function concretarProyecto(id) {
@@ -539,7 +628,7 @@ function resetearEstado() {
     if (confirm("⚠️ ¿Estás seguro de que deseas reiniciar la terminal a CERO? Se borrará todo el historial y acumulados.")) {
         localStorage.removeItem('budget_salinas_state');
         state = { 
-            streak: 0, metaBS3: 0, gastosMensuales: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0, 
+            metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0, 
             proyectos: [], dailyLogs: [], history: [],
             categoriasGastos: [
                 { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
