@@ -90,8 +90,16 @@
             <div class="big-m" id="streakVal">0</div>
             <span style="font-size:.7rem;color:var(--amber)">MANTÉN TU POSICIÓN</span>
         </div>
+
+        <!-- CONTENEDOR DE DÍAS PENDIENTES DE AUDITORÍA -->
+        <div id="diasPendientesContainer"></div>
+
         <div class="card">
             <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">CHECK-IN DIARIO & AUDITORÍA</p>
+            <div style="background:#0b0d0e; padding:10px; border-radius:6px; border:1px solid var(--surface-border); margin-bottom:10px;">
+                <span style="font-size:.75rem; color:var(--mut);">Techo Diario Disponible (/14):</span>
+                <div style="font-size:1.1rem; font-weight:bold; color:var(--green);" id="techoDiarioDisplay">$0</div>
+            </div>
             <label>Fecha del Registro</label>
             <input type="date" id="inputFechaCheckin">
             <label>Monto Gastado Hoy ($)</label>
@@ -205,6 +213,21 @@
             </div>
         </div>
 
+        <!-- PORTAL DE INYECCIÓN DE CAPITAL EXTERNO -->
+        <div class="card">
+            <h3 style="margin:0 0 6px 0;font-size:.9rem;color:var(--blue)">➕ INYECCIÓN DE CAPITAL EXTERNO</h3>
+            <p style="font-size:.75rem;color:var(--mut);margin-bottom:8px">Para aportes extraordinarios, remanentes diarios o ingresos externos fuera del Payslip.</p>
+            <label>Monto a Inyectar ($)</label>
+            <input type="text" inputmode="numeric" id="inputInyMonto" placeholder="Ej. 25.000">
+            <label>Destino del Capital</label>
+            <select id="selectInyDestino">
+                <option value="bs3">BS3 (Escudo Defensivo)</option>
+                <option value="acciones">Acciones (Largo Plazo)</option>
+                <option value="futuros">Futuros (Especulativo)</option>
+            </select>
+            <button class="btn btn-b" style="margin-top:6px;" onclick="ejecutarInyeccionCapital()">INYECTAR A BÓVEDA</button>
+        </div>
+
         <button class="acc-btn" onclick="toggleAcc('accBackup')">💾 RESPALDO Y GESTIÓN DE DATOS <span>▼</span></button>
         <div id="accBackup" class="acc-content">
             <button class="btn btn-b" onclick="exportarBackup()">DESCARGAR BACKUP JSON</button>
@@ -236,6 +259,7 @@ const MUNGER_QUOTES = [
 let state = JSON.parse(localStorage.getItem('budget_salinas_state')) || {
     metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0,
     proyectos: [], dailyLogs: [], categoriasGastos: [
+        { id: 'day2day', name: "Presupuesto Día a Día (Efectivo)", amount: 0, isDayToDay: true },
         { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
         { id: 2, name: "Supermercado", amount: 0 },
         { id: 3, name: "Transporte / Bencina", amount: 0 }
@@ -275,7 +299,6 @@ function calcularRachaInteligente() {
     logs.forEach(l => { if (!uniqueLogs[l.date]) uniqueLogs[l.date] = l; });
     let sortedDates = Object.keys(uniqueLogs).sort((a, b) => new Date(b) - new Date(a.date));
     
-    // Obtener la fecha actual del teléfono en formato local YYYY-MM-DD (es-CA)
     let now = new Date();
     let year = now.getFullYear();
     let month = String(now.getMonth() + 1).padStart(2, '0');
@@ -312,12 +335,66 @@ function calcularRachaInteligente() {
     return streak;
 }
 
+function renderDiasPendientes() {
+    let cont = document.getElementById('diasPendientesContainer');
+    if (!cont) return;
+    if (!state.dailyLogs || state.dailyLogs.length === 0) {
+        cont.innerHTML = '';
+        return;
+    }
+    
+    let logsMap = {};
+    state.dailyLogs.forEach(l => logsMap[l.date] = true);
+    
+    let sortedLogs = [...state.dailyLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
+    let primerRegistroStr = sortedLogs[0].date;
+    
+    let missing = [];
+    // Revisar los últimos 7 días hacia atrás (desde ayer)
+    for (let i = 1; i <= 7; i++) {
+        let d = new Date();
+        d.setDate(d.getDate() - i);
+        let y = d.getFullYear();
+        let m = String(d.getMonth() + 1).padStart(2, '0');
+        let day = String(d.getDate()).padStart(2, '0');
+        let dStr = `${y}-${m}-${day}`;
+        
+        // Respetar T=0: No buscar antes del primer registro de la terminal
+        if (new Date(dStr) < new Date(primerRegistroStr)) break;
+        
+        if (!logsMap[dStr]) {
+            missing.push(dStr);
+        }
+    }
+    
+    if (missing.length > 0) {
+        let html = `<div class="card" style="border-color: var(--amber); background: #1a160e; margin-bottom: 12px;">
+            <p style="font-size:.75rem; color:var(--amber); font-weight:bold; margin:0 0 4px 0;">⚠️ AUDITORÍA: DÍAS PENDIENTES</p>
+            <p style="font-size:.7rem; color:var(--mut); margin:0 0 8px 0;">Tienes fechas pasadas sin check-in registrado. Toca una fecha para cargarla:</p>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">`;
+        missing.forEach(dateStr => {
+            html += `<button class="btn" style="width:auto; padding:6px 10px; font-size:0.75rem; background:#2a2212; color:var(--amber); border:1px solid var(--amber); margin-bottom:0;" onclick="seleccionarFechaPendiente('${dateStr}')">${dateStr}</button>`;
+        });
+        html += `</div></div>`;
+        cont.innerHTML = html;
+    } else {
+        cont.innerHTML = '';
+    }
+}
+
+function seleccionarFechaPendiente(dateStr) {
+    let dateInput = document.getElementById('inputFechaCheckin');
+    if (dateInput) {
+        dateInput.value = dateStr;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
 function updateUI() {
     let computedStreak = calcularRachaInteligente();
     document.getElementById('streakVal').innerText = computedStreak;
     document.getElementById('mungerQuote').innerText = `"${MUNGER_QUOTES[Math.floor(Math.random() * MUNGER_QUOTES.length)]}"`;
     
-    // Sincronización automática infalible con la fecha del teléfono (YYYY-MM-DD)
     let dateInput = document.getElementById('inputFechaCheckin');
     if (dateInput && !dateInput.value) {
         let now = new Date();
@@ -326,6 +403,14 @@ function updateUI() {
         let day = String(now.getDate()).padStart(2, '0');
         dateInput.value = `${year}-${month}-${day}`;
     }
+
+    renderDiasPendientes();
+
+    let dayToDayCat = (state.categoriasGastos || []).find(c => c.isDayToDay);
+    let dayToDayAmount = dayToDayCat ? Number(dayToDayCat.amount || 0) : 0;
+    let techoDiario = dayToDayAmount > 0 ? Math.round(dayToDayAmount / 14) : 0;
+    let techoElem = document.getElementById('techoDiarioDisplay');
+    if (techoElem) techoElem.innerText = formatMoney(techoDiario);
 
     let target = state.metaBS3Custom || 0;
     let current = state.bs3Current || 0;
@@ -347,6 +432,7 @@ function updateUI() {
     renderProyectos();
     renderCategoriasGastos();
     renderProvisionProyectosPayslip();
+    poblarSelectoresInyeccion();
     calcularPayslip();
     localStorage.setItem('budget_salinas_state', JSON.stringify(state));
 }
@@ -366,10 +452,11 @@ function renderCategoriasGastos() {
     
     let html = "";
     state.categoriasGastos.forEach((cat, index) => {
+        let isProtected = cat.isDayToDay;
         html += `<div class="flex-row">
-            <input type="text" value="${cat.name}" onchange="actualizarNombreCat(${index}, this.value)" placeholder="Nombre categoría" style="flex:1; margin-bottom:0;">
+            <input type="text" value="${cat.name}" ${isProtected ? 'readonly style="flex:1; margin-bottom:0; background:#14181b; color:var(--amber); font-weight:bold;"' : 'onchange="actualizarNombreCat(' + index + ', this.value)" placeholder="Nombre categoría" style="flex:1; margin-bottom:0;"'}>
             <input type="text" inputmode="numeric" id="cat_amt_${index}" value="${cat.amount > 0 ? cat.amount : ''}" onkeyup="calcularPayslip()" placeholder="Monto ($)" style="flex:1; margin-bottom:0;">
-            <button class="btn btn-r" style="width:auto; padding:10px; margin:0;" onclick="eliminarCategoriaGasto(${index})">✕</button>
+            ${!isProtected ? `<button class="btn btn-r" style="width:auto; padding:10px; margin:0;" onclick="eliminarCategoriaGasto(${index})">✕</button>` : '<span style="width:30px; text-align:center; font-size:0.7rem; color:var(--mut)">/14</span>'}
         </div>`;
     });
     cont.innerHTML = html;
@@ -377,15 +464,18 @@ function renderCategoriasGastos() {
 
 function agregarCategoriaGasto() {
     guardarValoresCategoriasEnMemoria();
-    state.categoriasGastos.push({ id: Date.now(), name: "Nueva Categoría", amount: 0 });
+    state.categoriasGastos.push({ id: Date.now(), name: "Nueva Categoría", amount: 0, isDayToDay: false });
     renderCategoriasGastos();
 }
 
 function actualizarNombreCat(index, val) {
-    state.categoriasGastos[index].name = val;
+    if (!state.categoriasGastos[index].isDayToDay) {
+        state.categoriasGastos[index].name = val;
+    }
 }
 
 function eliminarCategoriaGasto(index) {
+    if (state.categoriasGastos[index].isDayToDay) return alert('La categoría Día a Día es nativa y no se puede eliminar.');
     guardarValoresCategoriasEnMemoria();
     state.categoriasGastos.splice(index, 1);
     renderCategoriasGastos();
@@ -418,6 +508,57 @@ function renderProvisionProyectosPayslip() {
         </div>`;
     });
     cont.innerHTML = html;
+}
+
+function poblarSelectoresInyeccion() {
+    let sel = document.getElementById('selectInyDestino');
+    if (!sel) return;
+    let html = `
+        <option value="bs3">BS3 (Escudo Defensivo)</option>
+        <option value="acciones">Acciones (Largo Plazo)</option>
+        <option value="futuros">Futuros (Especulativo)</option>
+    `;
+    let activos = (state.proyectos || []).filter(p => p.status === 'activo');
+    activos.forEach(p => {
+        html += `<option value="proj_${p.id}">Proyecto: ${p.name}</option>`;
+    });
+    sel.innerHTML = html;
+}
+
+function ejecutarInyeccionCapital() {
+    let monto = parseNum(document.getElementById('inputInyMonto').value);
+    if (monto <= 0) return alert('Ingresa un monto válido mayor a cero.');
+    let destino = document.getElementById('selectInyDestino').value;
+
+    if (destino === 'bs3') {
+        state.bs3Current = (state.bs3Current || 0) + monto;
+        alert(`¡Inyección de ${formatMoney(monto)} aplicada al Escudo Defensivo (BS3)!`);
+    } else if (destino === 'acciones') {
+        state.accionesTotal = (state.accionesTotal || 0) + monto;
+        alert(`¡Inyección de ${formatMoney(monto)} aplicada a Acciones!`);
+    } else if (destino === 'futuros') {
+        if (!confirm("⚠️ Recordatorio: Estás inyectando capital a Futuros (Especulación). ¿Continuar?")) return;
+        state.futurosTotal = (state.futurosTotal || 0) + monto;
+        alert(`¡Inyección de ${formatMoney(monto)} aplicada a Futuros!`);
+    } else if (destino.startsWith('proj_')) {
+        let projId = Number(destino.replace('proj_', ''));
+        let p = state.proyectos.find(x => x.id === projId);
+        if (p) {
+            p.current += monto;
+            alert(`¡Inyección de ${formatMoney(monto)} aplicada al proyecto "${p.name}"!`);
+        }
+    }
+
+    if (!state.history) state.history = [];
+    state.history.push({
+        date: new Date().toLocaleDateString('es-CA'),
+        bs3: state.bs3Current,
+        acciones: state.accionesTotal,
+        futuros: state.futurosTotal
+    });
+
+    document.getElementById('inputInyMonto').value = '';
+    updateUI();
 }
 
 function doCheckIn(success) {
@@ -644,6 +785,7 @@ function resetearEstado() {
             metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0, 
             proyectos: [], dailyLogs: [], history: [],
             categoriasGastos: [
+                { id: 'day2day', name: "Presupuesto Día a Día (Efectivo)", amount: 0, isDayToDay: true },
                 { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
                 { id: 2, name: "Supermercado", amount: 0 },
                 { id: 3, name: "Transporte / Bencina", amount: 0 }
