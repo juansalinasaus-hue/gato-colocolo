@@ -52,6 +52,7 @@
         .btn-r { background: var(--red); color: #fff; }
         .btn-b { background: var(--blue); color: #fff; }
         .btn-a { background: var(--amber); color: #000; }
+        .btn-sm { padding: 6px 10px; font-size: 0.75rem; width: auto; display: inline-block; }
         nav {
             position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
             background: var(--surface); border-top: 1px solid var(--surface-border);
@@ -73,6 +74,7 @@
         .acc-content { display: none; padding: 8px 0; }
         label { font-size: 0.75rem; color: var(--mut); display: block; margin-bottom: 4px; }
         .flex-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; background: #0b0d0e; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; border: 1px solid var(--surface-border); }
         canvas { width: 100%; height: 200px; background: #0b0d0e; border-radius: 6px; margin-top: 8px; }
     </style>
 </head>
@@ -103,12 +105,20 @@
             <label>Fecha del Registro</label>
             <input type="date" id="inputFechaCheckin">
             <label>Monto Gastado Hoy ($)</label>
-            <input type="text" inputmode="numeric" id="inputGastoHoy" placeholder="Ej. 5.000 (0 si no hubo gasto)">
+            <input type="text" inputmode="numeric" id="inputGastoHoy" placeholder="Ej. 5.000 o 13,75">
             <label>Detalle Inesquivable</label>
             <textarea id="inputDetalleHoy" rows="2" placeholder="En qué se fue el dinero (ej: café, almuerzo fuera)"></textarea>
             <button class="btn btn-g" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO (SÍ)</button>
             <button class="btn btn-r" onclick="doCheckIn(false)">ME PASÉ / CAÍDA (NO)</button>
         </div>
+
+        <div class="card">
+            <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">ÚLTIMOS MOVIMIENTOS Y REVERSIÓN</p>
+            <div id="listaHistorialCheckins">
+                <p style="font-size:0.75rem; color:var(--mut); text-align:center;">Sin registros recientes.</p>
+            </div>
+        </div>
+
         <button class="acc-btn" onclick="toggleAcc('accMunger')">🏛️ ANCLA DE DISCIPLINA <span>▼</span></button>
         <div id="accMunger" class="acc-content">
             <div class="card"><p style="font-size:.75rem;color:var(--amber);font-style:italic;margin:0" id="mungerQuote">"Cargando..."</p></div>
@@ -264,15 +274,27 @@ let state = JSON.parse(localStorage.getItem('budget_salinas_state')) || {
         { id: 2, name: "Supermercado", amount: 0 },
         { id: 3, name: "Transporte / Bencina", amount: 0 }
     ],
-    history: []
+    history: [],
+    historialMovimientos: []
 };
 
 let currentExcedente = 0;
 
+// FUNCIÓN DE SANITIZACIÓN NUMÉRICA ESPAÑOL ROBUSTA
 function parseNum(val) {
     if (!val) return 0;
-    let clean = String(val).replace(/\./g, '').replace(/,/g, '.');
-    return Number(clean) || 0;
+    let limpio = String(val).trim();
+    if (limpio.includes(',')) {
+        limpio = limpio.replace(/\./g, '').replace(',', '.');
+    } else if (limpio.includes('.')) {
+        const partes = limpio.split('.');
+        const esMilesConPunto = partes.length > 2 || (partes.length === 2 && partes[1].length === 3);
+        if (esMilesConPunto) {
+            limpio = limpio.replace(/\./g, '');
+        }
+    }
+    limpio = limpio.replace(/[^0-9.]/g, '');
+    return parseFloat(limpio) || 0;
 }
 
 function formatMoney(num) {
@@ -350,7 +372,6 @@ function renderDiasPendientes() {
     let primerRegistroStr = sortedLogs[0].date;
     
     let missing = [];
-    // Revisar los últimos 7 días hacia atrás (desde ayer)
     for (let i = 1; i <= 7; i++) {
         let d = new Date();
         d.setDate(d.getDate() - i);
@@ -359,7 +380,6 @@ function renderDiasPendientes() {
         let day = String(d.getDate()).padStart(2, '0');
         let dStr = `${y}-${m}-${day}`;
         
-        // Respetar T=0: No buscar antes del primer registro de la terminal
         if (new Date(dStr) < new Date(primerRegistroStr)) break;
         
         if (!logsMap[dStr]) {
@@ -390,6 +410,49 @@ function seleccionarFechaPendiente(dateStr) {
     }
 }
 
+function renderHistorialMovimientos() {
+    let cont = document.getElementById('listaHistorialCheckins');
+    if (!cont) return;
+    if (!state.historialMovimientos || state.historialMovimientos.length === 0) {
+        cont.innerHTML = `<p style="font-size:0.75rem; color:var(--mut); text-align:center;">Sin registros recientes.</p>`;
+        return;
+    }
+    cont.innerHTML = state.historialMovimientos.slice(0, 5).map(m => `
+        <div class="history-item">
+            <div>
+                <strong>[${m.fecha}]</strong> ${m.tipo}: ${m.desc}
+            </div>
+            <button class="btn btn-r btn-sm" style="margin:0;" onclick="eliminarMovimiento(${m.id})">❌</button>
+        </div>
+    `).join('');
+}
+
+function eliminarMovimiento(id) {
+    if (!state.historialMovimientos) return;
+    let index = state.historialMovimientos.findIndex(m => m.id === id);
+    if (index !== -1) {
+        let mov = state.historialMovimientos[index];
+        if (confirm(`¿Deseas eliminar y revertir este movimiento?\n"${mov.desc}"`)) {
+            if (mov.tipo === 'Check-in') {
+                // Remover de dailyLogs
+                state.dailyLogs = (state.dailyLogs || []).filter(l => !(l.date === mov.fecha));
+            } else if (mov.tipo === 'Inyección Capital') {
+                if (mov.destino === 'bs3') state.bs3Current = Math.max(0, (state.bs3Current || 0) - mov.monto);
+                if (mov.destino === 'acciones') state.accionesTotal = Math.max(0, (state.accionesTotal || 0) - mov.monto);
+                if (mov.destino === 'futuros') state.futurosTotal = Math.max(0, (state.futurosTotal || 0) - mov.monto);
+                if (mov.destino.startsWith('proj_')) {
+                    let projId = Number(mov.destino.replace('proj_', ''));
+                    let p = (state.proyectos || []).find(x => x.id === projId);
+                    if (p) p.current = Math.max(0, p.current - mov.monto);
+                }
+            }
+            state.historialMovimientos.splice(index, 1);
+            updateUI();
+            alert("Movimiento eliminado y revertido con éxito.");
+        }
+    }
+}
+
 function updateUI() {
     let computedStreak = calcularRachaInteligente();
     document.getElementById('streakVal').innerText = computedStreak;
@@ -405,6 +468,7 @@ function updateUI() {
     }
 
     renderDiasPendientes();
+    renderHistorialMovimientos();
 
     let dayToDayCat = (state.categoriasGastos || []).find(c => c.isDayToDay);
     let dayToDayAmount = dayToDayCat ? Number(dayToDayCat.amount || 0) : 0;
@@ -530,22 +594,32 @@ function ejecutarInyeccionCapital() {
     if (monto <= 0) return alert('Ingresa un monto válido mayor a cero.');
     let destino = document.getElementById('selectInyDestino').value;
 
+    let destinoTexto = destino.toUpperCase();
+    if (destino === 'bs3') destinoTexto = "BS3 (ESCUDO DEFENSIVO)";
+    if (destino === 'acciones') destinoTexto = "ACCIONES (LARGO PLAZO)";
+    if (destino === 'futuros') destinoTexto = "FUTUROS (ESPECULATIVO)";
+    if (destino.startsWith('proj_')) {
+        let projId = Number(destino.replace('proj_', ''));
+        let pr = (state.proyectos || []).find(x => x.id === projId);
+        if (pr) destinoTexto = `PROYECTO: ${pr.name.toUpperCase()}`;
+    }
+
+    // Doble confirmación visual previa
+    if (!confirm(`¿Confirmas la inyección de capital?\n\n- Monto: ${formatMoney(monto)}\n- Destino: ${destinoTexto}`)) {
+        return;
+    }
+
     if (destino === 'bs3') {
         state.bs3Current = (state.bs3Current || 0) + monto;
-        alert(`¡Inyección de ${formatMoney(monto)} aplicada al Escudo Defensivo (BS3)!`);
     } else if (destino === 'acciones') {
         state.accionesTotal = (state.accionesTotal || 0) + monto;
-        alert(`¡Inyección de ${formatMoney(monto)} aplicada a Acciones!`);
     } else if (destino === 'futuros') {
-        if (!confirm("⚠️ Recordatorio: Estás inyectando capital a Futuros (Especulación). ¿Continuar?")) return;
         state.futurosTotal = (state.futurosTotal || 0) + monto;
-        alert(`¡Inyección de ${formatMoney(monto)} aplicada a Futuros!`);
     } else if (destino.startsWith('proj_')) {
         let projId = Number(destino.replace('proj_', ''));
         let p = state.proyectos.find(x => x.id === projId);
         if (p) {
             p.current += monto;
-            alert(`¡Inyección de ${formatMoney(monto)} aplicada al proyecto "${p.name}"!`);
         }
     }
 
@@ -557,8 +631,19 @@ function ejecutarInyeccionCapital() {
         futuros: state.futurosTotal
     });
 
+    if (!state.historialMovimientos) state.historialMovimientos = [];
+    state.historialMovimientos.unshift({
+        id: Date.now(),
+        tipo: 'Inyección Capital',
+        desc: `Inyección de ${formatMoney(monto)} a ${destinoTexto}`,
+        fecha: new Date().toISOString().split('T')[0],
+        monto: monto,
+        destino: destino
+    });
+
     document.getElementById('inputInyMonto').value = '';
     updateUI();
+    alert(`¡Inyección de ${formatMoney(monto)} aplicada con éxito!`);
 }
 
 function doCheckIn(success) {
@@ -567,16 +652,31 @@ function doCheckIn(success) {
     
     let spent = parseNum(document.getElementById('inputGastoHoy').value);
     let detail = document.getElementById('inputDetalleHoy').value.trim();
+
+    // Doble confirmación visual previa antes de guardar el check-in
+    if (!confirm(`¿Confirmas el registro de este check-in?\n\n- Fecha: ${fecha}\n- Estado: ${success ? 'CUMPLIÓ (SÍ)' : 'CAÍDA (NO)'}\n- Monto Gastado: ${formatMoney(spent)}\n- Detalle: ${detail || 'Sin detalle'}`)) {
+        return;
+    }
+
     if (!state.dailyLogs) state.dailyLogs = [];
     
     state.dailyLogs = state.dailyLogs.filter(l => l.date !== fecha);
     state.dailyLogs.push({ date: fecha, spent, detail, success });
+
+    if (!state.historialMovimientos) state.historialMovimientos = [];
+    state.historialMovimientos.unshift({
+        id: Date.now(),
+        tipo: 'Check-in',
+        desc: `${success ? 'Cumplió' : 'Caída'} - Gasto: ${formatMoney(spent)} (${detail || 'Sin detalle'})`,
+        fecha: fecha,
+        monto: spent
+    });
     
     document.getElementById('inputGastoHoy').value = '';
     document.getElementById('inputDetalleHoy').value = '';
     
     updateUI();
-    alert(`Check-in registrado para el día ${fecha} (${success ? 'Cumplido' : 'Caída'}).`);
+    alert(`Check-in registrado para el día ${fecha}.`);
 }
 
 function crearProyecto() {
@@ -783,7 +883,7 @@ function resetearEstado() {
         localStorage.removeItem('budget_salinas_state');
         state = { 
             metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0, 
-            proyectos: [], dailyLogs: [], history: [],
+            proyectos: [], dailyLogs: [], history: [], historialMovimientos: [],
             categoriasGastos: [
                 { id: 'day2day', name: "Presupuesto Día a Día (Efectivo)", amount: 0, isDayToDay: true },
                 { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
