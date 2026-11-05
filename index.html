@@ -26,11 +26,11 @@
             height: 100dvh; display: flex; flex-direction: column; overflow: hidden;
         }
         header {
-            padding: 14px 16px; background: var(--surface); border-bottom: 1px solid var(--surface-border);
+            padding: calc(14px + env(safe-area-inset-top, 0px)) 16px 14px; background: var(--surface); border-bottom: 1px solid var(--surface-border);
             display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; font-weight: bold;
         }
         .main {
-            flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 80px;
+            flex: 1; overflow-y: auto; padding: 16px; padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)); -webkit-overflow-scrolling: touch;
         }
         .tab { display: none; }
         .tab.active { display: block; }
@@ -41,7 +41,7 @@
         .big-m { font-size: 2rem; font-weight: bold; color: var(--amber); margin: 6px 0; }
         input, textarea, select {
             width: 100%; background: #0b0d0e; border: 1px solid var(--surface-border);
-            color: var(--text); padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 8px;
+            color: var(--text); padding: 10px; border-radius: 6px; font-size: 16px; margin-bottom: 8px;
         }
         input:focus, textarea:focus { outline: 1px solid var(--amber); }
         .btn {
@@ -54,7 +54,7 @@
         .btn-a { background: var(--amber); color: #000; }
         .btn-sm { padding: 6px 10px; font-size: 0.75rem; width: auto; display: inline-block; }
         nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; height: 60px;
+            position: fixed; bottom: 0; left: 0; width: 100%; height: calc(60px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px);
             background: var(--surface); border-top: 1px solid var(--surface-border);
             display: flex; justify-content: space-around; align-items: center; z-index: 100;
         }
@@ -71,11 +71,11 @@
             color: var(--text); padding: 10px; text-align: left; font-size: 0.8rem; font-weight: bold;
             border-radius: 6px; margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between;
         }
-        .acc-content { display: none; padding: 8px 0; }
+        .acc-content { display: none; padding: 4px 0 8px 0; }
         label { font-size: 0.75rem; color: var(--mut); display: block; margin-bottom: 4px; }
         .flex-row { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; }
         .history-item { display: flex; justify-content: space-between; align-items: center; background: #0b0d0e; padding: 8px 10px; border-radius: 6px; margin-bottom: 6px; font-size: 0.8rem; border: 1px solid var(--surface-border); }
-        canvas { width: 100%; height: 200px; background: #0b0d0e; border-radius: 6px; margin-top: 8px; }
+        canvas { width: 100%; height: 240px; background: #0b0d0e; border-radius: 6px; margin-top: 8px; display: block; }
     </style>
 </head>
 <body>
@@ -85,43 +85,59 @@
 </header>
 
 <div class="main">
-    <!-- PESTAÑA 1: RACHA -->
+    <!-- PESTAÑA 1: RACHA & POZO ACUMULADO -->
     <div id="tab1" class="tab active">
         <div class="card" style="text-align:center">
             <span style="font-size:.7rem;color:var(--mut)">RACHA DE SOBRIEDAD PATRIMONIAL</span>
             <div class="big-m" id="streakVal">0</div>
-            <span style="font-size:.7rem;color:var(--amber)">MANTÉN TU POSICIÓN</span>
+            <span style="font-size:.65rem;color:var(--mut);display:block;margin-bottom:6px">PERÍODOS CERRADOS SEGUIDOS DENTRO DEL PRESUPUESTO</span>
+            <span style="font-size:.7rem;color:var(--amber)">MANTÉN TU POSICIÓN SOBERANA</span>
         </div>
 
-        <!-- CONTENEDOR DE DÍAS PENDIENTES DE AUDITORÍA -->
         <div id="diasPendientesContainer"></div>
 
         <div class="card">
-            <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">CHECK-IN DIARIO & AUDITORÍA</p>
-            <div style="background:#0b0d0e; padding:10px; border-radius:6px; border:1px solid var(--surface-border); margin-bottom:10px;">
-                <span style="font-size:.75rem; color:var(--mut);">Techo Diario Disponible (/14):</span>
-                <div style="font-size:1.1rem; font-weight:bold; color:var(--green);" id="techoDiarioDisplay">$0</div>
+            <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">CHECK-IN DIARIO & POZO ACUMULADO</p>
+            
+            <!-- Telemetría del Pozo Quincenal -->
+            <div style="background:#0b0d0e; padding:10px; border-radius:6px; border:1px solid var(--surface-border); margin-bottom:10px; display:grid; grid-template-columns: 1fr 1fr; gap:8px; text-align:center;">
+                <div>
+                    <span style="font-size:0.65rem; color:var(--mut); display:block;">PRESUPUESTO DEL PERÍODO</span>
+                    <strong style="font-size:0.95rem; color:var(--amber);" id="pozoTotalDisplay">$0</strong>
+                </div>
+                <div>
+                    <span style="font-size:0.65rem; color:var(--mut); display:block;">REMANENTE LIBRE</span>
+                    <strong style="font-size:0.95rem; color:var(--green);" id="pozoRemanenteDisplay">$0</strong>
+                </div>
             </div>
+
+            <div class="p-bg"><div id="periodoBar" class="p-fill"></div></div>
+            <p id="periodoInfo" style="font-size:.7rem;color:var(--mut);margin:0 0 10px 0;line-height:1.4"></p>
+            <label>Inicio del período actual</label>
+            <input type="date" id="inputInicioPeriodo" onchange="cambiarInicioPeriodo(this.value)">
             <label>Fecha del Registro</label>
             <input type="date" id="inputFechaCheckin">
             <label>Monto Gastado Hoy ($)</label>
-            <input type="text" inputmode="numeric" id="inputGastoHoy" placeholder="Ej. 5.000 o 13,75">
+            <input type="text" inputmode="decimal" id="inputGastoHoy" placeholder="Ej. 5.000 o 13,75">
             <label>Detalle Inesquivable</label>
-            <textarea id="inputDetalleHoy" rows="2" placeholder="En qué se fue el dinero (ej: café, almuerzo fuera)"></textarea>
-            <button class="btn btn-g" onclick="doCheckIn(true)">CUMPLÍ PRESUPUESTO (SÍ)</button>
-            <button class="btn btn-r" onclick="doCheckIn(false)">ME PASÉ / CAÍDA (NO)</button>
+            <textarea id="inputDetalleHoy" rows="2" placeholder="En qué se fue el dinero..."></textarea>
+            
+            <button class="btn btn-g" onclick="doCheckIn()">REGISTRAR GASTO DEL DÍA</button>
         </div>
 
-        <div class="card">
-            <p style="margin:0 0 6px 0;font-size:.8rem;font-weight:bold">ÚLTIMOS MOVIMIENTOS Y REVERSIÓN</p>
-            <div id="listaHistorialCheckins">
-                <p style="font-size:0.75rem; color:var(--mut); text-align:center;">Sin registros recientes.</p>
+        <!-- Acordeón de Movimientos -->
+        <button class="acc-btn" onclick="toggleAcc('accMovimientos')">📜 ÚLTIMOS MOVIMIENTOS Y REVERSIÓN <span>▼</span></button>
+        <div id="accMovimientos" class="acc-content">
+            <div class="card" style="margin-bottom:0;">
+                <div id="listaHistorialCheckins">
+                    <p style="font-size:0.75rem; color:var(--mut); text-align:center;">Sin registros recientes.</p>
+                </div>
             </div>
         </div>
 
-        <button class="acc-btn" onclick="toggleAcc('accMunger')">🏛️ ANCLA DE DISCIPLINA <span>▼</span></button>
+        <button class="acc-btn" onclick="toggleAcc('accMunger')" style="margin-top:8px;">🏛️ ANCLA DE DISCIPLINA <span>▼</span></button>
         <div id="accMunger" class="acc-content">
-            <div class="card"><p style="font-size:.75rem;color:var(--amber);font-style:italic;margin:0" id="mungerQuote">"Cargando..."</p></div>
+            <div class="card" style="margin-bottom:0;"><p style="font-size:.75rem;color:var(--amber);font-style:italic;margin:0" id="mungerQuote">"Cargando..."</p></div>
         </div>
     </div>
 
@@ -132,16 +148,26 @@
             <div class="p-bg"><div id="goalProgress" class="p-fill"></div></div>
             <p style="font-size:.75rem;margin:4px 0">Progreso: <strong id="pctVal">0%</strong></p>
             <p style="font-size:.75rem;margin:4px 0">Actual: <strong id="currentSaved">$0</strong> / Meta Soberana: <strong id="targetVal">$0</strong></p>
-            
+
             <label style="margin-top:10px">Definir Meta Exacta del Escudo Defensivo ($)</label>
             <div class="flex-row">
-                <input type="text" inputmode="numeric" id="inputMetaBS3Custom" placeholder="Ej. 3.000.000" style="margin-bottom:0; flex:1;">
+                <input type="text" inputmode="decimal" id="inputMetaBS3Custom" placeholder="Ej. 6.000" style="margin-bottom:0; flex:1;">
                 <button class="btn btn-b" style="width:auto; margin-bottom:0;" onclick="guardarMetaBS3()">ESTABLECER</button>
             </div>
 
             <p style="font-size:.75rem;color:var(--mut);margin-top:10px;line-height:1.4">
-                El escudo inquebrantable definido por ti mismo. Se alimenta exclusivamente de forma consciente durante la Apertura Quincenal.
+                El escudo inquebrantable definido por ti mismo. Se alimenta exclusivamente de forma consciente durante la Apertura.
             </p>
+
+            <hr style="border:0;border-top:1px solid var(--surface-border);margin:14px 0">
+            <h4 style="margin:0 0 4px 0;font-size:.8rem;color:var(--red)">🚨 RETIRO DE EMERGENCIA</h4>
+            <p style="font-size:.7rem;color:var(--mut);margin:0 0 8px 0;line-height:1.4">Lo ideal es no tocar este fondo. Si lo haces, regístralo aquí para que tu saldo siga siendo real.</p>
+            <label>Monto a retirar ($)</label>
+            <input type="text" inputmode="decimal" id="inputRetiroMonto" placeholder="Ej. 50.000">
+            <label>Motivo (obligatorio)</label>
+            <input type="text" id="inputRetiroMotivo" placeholder="¿Por qué necesitas este dinero?">
+            <button class="btn btn-r" onclick="retirarBS3()">REGISTRAR RETIRO DEL BS3</button>
+            <p style="font-size:.7rem;color:var(--mut);margin:4px 0 0 0" id="retirosResumen"></p>
         </div>
     </div>
 
@@ -155,8 +181,9 @@
             </p>
         </div>
         <div class="card">
-            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟡 CAPITAL ESPECULATIVO (FUTUROS - USD)</h4>
-            <p style="font-size:.75rem">Acumulado Histórico: <strong id="accFuturos">$0</strong></p>
+            <h4 style="margin:0 0 4px 0;font-size:.8rem">🟡 CAPITAL ESPECULATIVO (FUTUROS)</h4>
+            <p style="font-size:.75rem">Aportado (AUD): <strong id="accFuturos">$0</strong></p>
+            <p style="font-size:.75rem">Recibido en la cuenta (USD): <strong id="accFuturosUSD">US$0</strong></p>
             <p style="font-size:.75rem;color:var(--mut);margin-top:6px;line-height:1.4">
                 Es infinitamente más importante cuidar el dinero que ya poseemos que ir desesperadamente tras más. En la especulación, la supervivencia y la defensa impecable son las que forjan la ventaja a largo plazo.
             </p>
@@ -169,8 +196,8 @@
             <h3 style="margin:0;font-size:.9rem;color:var(--blue)">🧳 PROYECTOS DE VIDA (SINKING FUNDS)</h3>
             <p style="font-size:.75rem;color:var(--mut);margin:4px 0 8px 0">Provisiones obligatorias de corto plazo que se apartan antes del excedente libre.</p>
             <input type="text" id="inputProjName" placeholder="Nombre (ej. Skydiving, Viaje)">
-            <input type="text" inputmode="numeric" id="inputProjGoal" placeholder="Meta Total ($)">
-            <input type="text" inputmode="numeric" id="inputProjProv" placeholder="Provisión Quincenal Obligatoria ($)">
+            <input type="text" inputmode="decimal" id="inputProjGoal" placeholder="Meta Total ($)">
+            <input type="text" inputmode="decimal" id="inputProjProv" placeholder="Provisión por Apertura Obligatoria ($)">
             <button class="btn btn-b" onclick="crearProyecto()">CREAR PROYECTO</button>
         </div>
         <div id="proyectosContainer"></div>
@@ -181,8 +208,32 @@
     <!-- PESTAÑA 5: GRÁFICAS / EVOLUCIÓN -->
     <div id="tab5" class="tab">
         <div class="card">
-            <h3 style="margin:0;font-size:.9rem;color:var(--amber)">📊 EVOLUCIÓN DE BÓVEDAS</h3>
-            <p style="font-size:.75rem;color:var(--mut);margin:4px 0 8px 0">Seguimiento histórico del capital asignado por quincena.</p>
+            <h3 style="margin:0;font-size:.9rem;color:var(--amber)">📊 EVOLUCIÓN MACROESTRUCTURAL DE BÓVEDAS</h3>
+            <p style="font-size:.75rem;color:var(--mut);margin:4px 0 10px 0">Telemetría de acumulación patrimonial por apertura.</p>
+            
+            <!-- Barra de Telemetría en Vivo -->
+            <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:6px; margin-bottom:10px;">
+                <div style="background:#0b0d0e; padding:8px; border-radius:6px; border:1px solid var(--surface-border); text-align:center;">
+                    <span style="font-size:0.6rem; color:var(--amber); display:block; font-weight:bold;">BS3 (ESCUDO)</span>
+                    <strong style="font-size:0.75rem; color:#fff;" id="telemetriaBs3">$0</strong>
+                </div>
+                <div style="background:#0b0d0e; padding:8px; border-radius:6px; border:1px solid var(--surface-border); text-align:center;">
+                    <span style="font-size:0.6rem; color:var(--green); display:block; font-weight:bold;">ACCIONES</span>
+                    <strong style="font-size:0.75rem; color:#fff;" id="telemetriaAcciones">$0</strong>
+                </div>
+                <div style="background:#0b0d0e; padding:8px; border-radius:6px; border:1px solid var(--surface-border); text-align:center;">
+                    <span style="font-size:0.6rem; color:var(--blue); display:block; font-weight:bold;">FUTUROS</span>
+                    <strong style="font-size:0.75rem; color:#fff;" id="telemetriaFuturos">$0</strong>
+                </div>
+            </div>
+
+            <!-- Leyenda Institucional -->
+            <div style="display:flex; justify-content: space-around; font-size:0.65rem; font-weight:bold; margin-bottom:8px; background:#0b0d0e; padding:6px; border-radius:6px; border:1px solid var(--surface-border);">
+                <span style="color:var(--amber)">● BS3 (Escudo Defensivo)</span>
+                <span style="color:var(--green)">● Acciones (Largo Plazo)</span>
+                <span style="color:var(--blue)">● Futuros (Especulativo)</span>
+            </div>
+
             <canvas id="evolutionChart"></canvas>
         </div>
     </div>
@@ -190,9 +241,9 @@
     <!-- PESTAÑA 6: PAYSLIP & MOTOR -->
     <div id="tab6" class="tab">
         <div class="card">
-            <h3 style="margin:0;font-size:.9rem;color:var(--green)">⚙️ APERTURA QUINCENAL</h3>
-            <label>Sueldo Bruto Payslip ($)</label>
-            <input type="text" inputmode="numeric" id="inputPayslipSueldo" placeholder="Ej. 1.200.000" onkeyup="calcularPayslip()">
+            <h3 style="margin:0;font-size:.9rem;color:var(--green)">⚙️ APERTURA</h3>
+            <label>Sueldo neto (después de impuestos) ($)</label>
+            <input type="text" inputmode="decimal" id="inputPayslipSueldo" placeholder="Ej. 1.200.000" onkeyup="calcularPayslip()">
             
             <div style="display: flex; justify-content: space-between; align-items: center; margin: 10px 0 4px 0;">
                 <p style="font-size:.75rem;font-weight:bold;color:var(--amber);margin:0">GASTOS OBLIGATORIOS / COMPROMISOS</p>
@@ -201,7 +252,6 @@
             
             <div id="categoriasGastosContainer" style="margin-bottom: 8px;"></div>
 
-            <!-- PROVISIÓN DE PROYECTOS ACTIVOS ANTES DEL EXCEDENTE -->
             <div style="background:#0b0d0e; padding:10px; border-radius:6px; border:1px solid var(--surface-border); margin: 10px 0;">
                 <p style="font-size:.75rem;font-weight:bold;color:var(--blue);margin:0 0 6px 0">PROVISIÓN OBLIGATORIA DE PROYECTOS ACTIVOS</p>
                 <div id="provisionProyectosContainer"><span style="font-size:.75rem;color:var(--mut)">Sin proyectos activos.</span></div>
@@ -213,28 +263,31 @@
             <div id="distribucionContainer" style="margin-top:14px; background:#0b0d0e; padding:12px; border-radius:6px; border:1px solid var(--surface-border);">
                 <p style="font-size:.75rem;font-weight:bold;color:var(--green);margin-top:0">DISTRIBUCIÓN CONSCIENTE DEL EXCEDENTE PURO</p>
                 <label>Aportar a BS3 (Escudo Defensivo)</label>
-                <input type="text" inputmode="numeric" id="distBS3" placeholder="0">
+                <input type="text" inputmode="decimal" id="distBS3" placeholder="0">
                 <label>Aportar a Acciones (Largo Plazo)</label>
-                <input type="text" inputmode="numeric" id="distAcciones" placeholder="0">
-                <label>Aportar a Futuros (Especulativo) ⚠️</label>
-                <input type="text" inputmode="numeric" id="distFuturos" placeholder="0">
+                <input type="text" inputmode="decimal" id="distAcciones" placeholder="0">
+                <label>Aportar a Futuros (AUD enviados) ⚠️</label>
+                <input type="text" inputmode="decimal" id="distFuturos" placeholder="0">
+                <label>USD que llegaron a Futuros (opcional)</label>
+                <input type="text" inputmode="decimal" id="distFuturosUSD" placeholder="0">
                 
                 <button class="btn btn-g" style="margin-top:12px" onclick="ejecutarDistribucion()">CONFIRMAR Y REGISTRAR APERTURA</button>
             </div>
         </div>
 
-        <!-- PORTAL DE INYECCIÓN DE CAPITAL EXTERNO -->
         <div class="card">
             <h3 style="margin:0 0 6px 0;font-size:.9rem;color:var(--blue)">➕ INYECCIÓN DE CAPITAL EXTERNO</h3>
             <p style="font-size:.75rem;color:var(--mut);margin-bottom:8px">Para aportes extraordinarios, remanentes diarios o ingresos externos fuera del Payslip.</p>
             <label>Monto a Inyectar ($)</label>
-            <input type="text" inputmode="numeric" id="inputInyMonto" placeholder="Ej. 25.000">
+            <input type="text" inputmode="decimal" id="inputInyMonto" placeholder="Ej. 25.000">
             <label>Destino del Capital</label>
-            <select id="selectInyDestino">
+            <select id="selectInyDestino" onchange="toggleInyUSD()">
                 <option value="bs3">BS3 (Escudo Defensivo)</option>
                 <option value="acciones">Acciones (Largo Plazo)</option>
                 <option value="futuros">Futuros (Especulativo)</option>
             </select>
+            <div id="boxInyUSD" style="display:none"><label>USD que llegaron a Futuros (opcional)</label>
+            <input type="text" inputmode="decimal" id="inputInyUSD" placeholder="0"></div>
             <button class="btn btn-b" style="margin-top:6px;" onclick="ejecutarInyeccionCapital()">INYECTAR A BÓVEDA</button>
         </div>
 
@@ -266,21 +319,85 @@ const MUNGER_QUOTES = [
     "El hábito de postergar la gratificación es la herramienta definitiva para la libertad."
 ];
 
-let state = JSON.parse(localStorage.getItem('budget_salinas_state')) || {
-    metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0,
-    proyectos: [], dailyLogs: [], categoriasGastos: [
-        { id: 'day2day', name: "Presupuesto Día a Día (Efectivo)", amount: 0, isDayToDay: true },
-        { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
-        { id: 2, name: "Supermercado", amount: 0 },
-        { id: 3, name: "Transporte / Bencina", amount: 0 }
-    ],
-    history: [],
-    historialMovimientos: []
-};
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+const parseLocal = str => { const [y, mo, d] = str.split('-').map(Number); return new Date(y, mo - 1, d); };
+const hoy = () => ymd(new Date());
+const r2 = x => Math.round((Number(x) || 0) * 100) / 100;
+function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function estadoInicial() {
+    return {
+        metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0, futurosUSD: 0,
+        proyectos: [], dailyLogs: [], categoriasGastos: [
+            { id: 'day2day', name: "Presupuesto Día a Día (Efectivo)", amount: 0, isDayToDay: true },
+            { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
+            { id: 2, name: "Supermercado", amount: 0 },
+            { id: 3, name: "Transporte / Bencina", amount: 0 }
+        ],
+        history: [],
+        historialMovimientos: [],
+        periodoInicio: null, presupuestoPeriodo: 0, periodos: [], periodoCuentaRacha: true
+    };
+}
+function normalizarEstado(raw) {
+    let base = estadoInicial();
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return base;
+    let st = Object.assign(base, raw);
+    ['proyectos', 'dailyLogs', 'history', 'historialMovimientos', 'categoriasGastos'].forEach(k => {
+        st[k] = Array.isArray(st[k]) ? st[k].filter(x => x && typeof x === 'object') : estadoInicial()[k];
+    });
+    ['metaBS3Custom', 'bs3Current', 'accionesTotal', 'futurosTotal', 'futurosUSD'].forEach(k => { st[k] = Number(st[k]) || 0; });
+    if (!st.categoriasGastos.some(c => c.isDayToDay)) st.categoriasGastos.unshift(estadoInicial().categoriasGastos[0]);
+    st.categoriasGastos.forEach(c => { c.name = String(c.name ?? ''); c.amount = Number(c.amount) || 0; });
+    const fechaOk = f => typeof f === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f);
+    // Fechas antiguas guardadas como dd/mm/aaaa (según el idioma del teléfono) -> aaaa-mm-dd
+    const aISO = f => { if (fechaOk(f)) return f; let m = typeof f === 'string' ? f.trim().match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/) : null; return m ? `${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}` : f; };
+    st.dailyLogs.forEach(l => { l.date = aISO(l.date); });
+    st.history.forEach(h => { h.date = aISO(h.date); });
+    st.historialMovimientos.forEach(m => { m.fecha = aISO(m.fecha); });
+    st.dailyLogs = st.dailyLogs.filter(l => fechaOk(l.date)).map(l => ({ ...l, spent: Number(l.spent) || 0 }));
+    st.proyectos = st.proyectos.map((p, i) => ({ ...p, id: Number(p.id) || (Date.now() + i), name: String(p.name ?? ''), goal: Number(p.goal) || 0, current: Number(p.current) || 0, provisionQuincenal: Number(p.provisionQuincenal) || 0, status: p.status === 'archivado' ? 'archivado' : 'activo' }));
+    st.history = st.history.filter(h => fechaOk(h.date)).map(h => ({ ...h, bs3: Number(h.bs3) || 0, acciones: Number(h.acciones) || 0, futuros: Number(h.futuros) || 0 }));
+    st.historialMovimientos = st.historialMovimientos.map((m, i) => ({ ...m, id: Number(m.id) || (Date.now() + i), tipo: String(m.tipo ?? ''), desc: String(m.desc ?? ''), fecha: String(m.fecha ?? '') }));
+    st.history.forEach(h => {
+        if (h.tipo === undefined && h.movId === undefined) {
+            let inj = st.historialMovimientos.find(m => m.tipo === 'Inyección Capital' && m.fecha === h.date && ['bs3', 'acciones', 'futuros'].includes(m.destino));
+            if (inj) { h.tipo = 'inyeccion'; h.movId = inj.id; }
+        }
+    });
+    st.periodos = (Array.isArray(st.periodos) ? st.periodos : []).filter(p => p && fechaOk(p.inicio) && fechaOk(p.fin)).map(p => ({ ...p, presupuesto: Number(p.presupuesto) || 0, gastado: Number(p.gastado) || 0, cumplido: !!p.cumplido }));
+    if (!fechaOk(st.periodoInicio)) {
+        let fechas = st.history.map(h => h.date).sort();
+        st.periodoInicio = fechas.length ? fechas[0] : null;
+        if (st.periodoInicio) st.periodoCuentaRacha = false;
+    }
+    st.periodoCuentaRacha = st.periodoCuentaRacha !== false;
+    if (typeof raw.presupuestoPeriodo !== 'number') {
+        let dd = st.categoriasGastos.find(c => c.isDayToDay);
+        st.presupuestoPeriodo = dd ? dd.amount : 0;
+    }
+    return st;
+}
+let state;
+try {
+    state = normalizarEstado(JSON.parse(localStorage.getItem('budget_salinas_state')));
+} catch (e) {
+    console.error(e);
+    try { localStorage.setItem('budget_salinas_state_corrupto', localStorage.getItem('budget_salinas_state') || ''); } catch (e2) {}
+    state = estadoInicial();
+}
+let _tGuardar = null;
+function guardarDiferido() {
+    clearTimeout(_tGuardar);
+    _tGuardar = setTimeout(guardar, 400);
+}
+function guardar() {
+    clearTimeout(_tGuardar);
+    try { localStorage.setItem('budget_salinas_state', JSON.stringify(state)); } catch (e) { console.error(e); }
+}
 
 let currentExcedente = 0;
 
-// FUNCIÓN DE SANITIZACIÓN NUMÉRICA ESPAÑOL ROBUSTA
 function parseNum(val) {
     if (!val) return 0;
     let limpio = String(val).trim();
@@ -294,11 +411,11 @@ function parseNum(val) {
         }
     }
     limpio = limpio.replace(/[^0-9.]/g, '');
-    return parseFloat(limpio) || 0;
+    return r2(parseFloat(limpio) || 0);
 }
 
 function formatMoney(num) {
-    return '$' + Number(num || 0).toLocaleString('es-ES');
+    return '$' + Number(num || 0).toLocaleString('es-CL');
 }
 
 function toggleAcc(id) {
@@ -314,53 +431,61 @@ function switchTab(n) {
     if (n === 5) { dibujarGrafica(); }
 }
 
-function calcularRachaInteligente() {
-    if (!state.dailyLogs || state.dailyLogs.length === 0) return 0;
-    let logs = [...state.dailyLogs].sort((a, b) => new Date(b.date) - new Date(a.date));
-    let uniqueLogs = {};
-    logs.forEach(l => { if (!uniqueLogs[l.date]) uniqueLogs[l.date] = l; });
-    let sortedDates = Object.keys(uniqueLogs).sort((a, b) => new Date(b) - new Date(a.date));
-    
-    let now = new Date();
-    let year = now.getFullYear();
-    let month = String(now.getMonth() + 1).padStart(2, '0');
-    let day = String(now.getDate()).padStart(2, '0');
-    let todayStr = `${year}-${month}-${day}`;
-    
-    let latestDateStr = sortedDates[0];
-    let diffDays = Math.round((new Date(todayStr) - new Date(latestDateStr)) / (1000 * 60 * 60 * 24));
-    
-    if (diffDays > 1) return 0;
-    
-    let streak = 0;
-    let currentDate = new Date(latestDateStr);
-    
-    for (let i = 0; i < sortedDates.length; i++) {
-        let dateStr = sortedDates[i];
-        let log = uniqueLogs[dateStr];
-        let expYear = currentDate.getFullYear();
-        let expMonth = String(currentDate.getMonth() + 1).padStart(2, '0');
-        let expDay = String(currentDate.getDate()).padStart(2, '0');
-        let expectedStr = `${expYear}-${expMonth}-${expDay}`;
-        
-        if (dateStr === expectedStr) {
-            if (log.success) {
-                streak++;
-                currentDate.setDate(currentDate.getDate() - 1);
-            } else {
-                break;
-            }
-        } else {
-            break;
-        }
+function sumarDias(fechaStr, n) {
+    let d = parseLocal(fechaStr);
+    d.setDate(d.getDate() + n);
+    return ymd(d);
+}
+
+function diasEntre(a, b) {
+    return Math.round((parseLocal(b) - parseLocal(a)) / 86400000);
+}
+
+function presupuestoPeriodoActual() {
+    return Number(state.presupuestoPeriodo) || 0;
+}
+
+function logsDePeriodo(ini, fin) {
+    return (state.dailyLogs || []).filter(l => l.date >= ini && (!fin || l.date <= fin));
+}
+
+function gastadoPeriodo(ini, fin) {
+    return r2(logsDePeriodo(ini, fin).reduce((a, l) => a + Number(l.spent || 0), 0));
+}
+
+function diasSinCheckin(ini, fin) {
+    let con = new Set((state.dailyLogs || []).map(l => l.date));
+    let faltan = [];
+    for (let d = ini, i = 0; d <= fin && i < 400; d = sumarDias(d, 1), i++) {
+        if (!con.has(d)) faltan.push(d);
     }
-    return streak;
+    return faltan;
+}
+
+function calcularRachaInteligente() {
+    let ps = state.periodos || [];
+    let n = 0;
+    for (let i = ps.length - 1; i >= 0; i--) {
+        if (ps[i].cuentaRacha === false) break;
+        if (!ps[i].cumplido) break;
+        n++;
+    }
+    return n;
+}
+
+function cambiarInicioPeriodo(v) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(v || '') || v > hoy()) {
+        alert('Elige una fecha válida que no sea futura.');
+        return updateUI();
+    }
+    state.periodoInicio = v;
+    updateUI();
 }
 
 function renderDiasPendientes() {
     let cont = document.getElementById('diasPendientesContainer');
     if (!cont) return;
-    if (!state.dailyLogs || state.dailyLogs.length === 0) {
+    if (!state.periodoInicio && (!state.dailyLogs || state.dailyLogs.length === 0)) {
         cont.innerHTML = '';
         return;
     }
@@ -369,10 +494,10 @@ function renderDiasPendientes() {
     state.dailyLogs.forEach(l => logsMap[l.date] = true);
     
     let sortedLogs = [...state.dailyLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
-    let primerRegistroStr = sortedLogs[0].date;
+    let primerRegistroStr = state.periodoInicio || (sortedLogs.length ? sortedLogs[0].date : '');
     
     let missing = [];
-    for (let i = 1; i <= 7; i++) {
+    for (let i = 1; i <= 62; i++) {
         let d = new Date();
         d.setDate(d.getDate() - i);
         let y = d.getFullYear();
@@ -380,17 +505,14 @@ function renderDiasPendientes() {
         let day = String(d.getDate()).padStart(2, '0');
         let dStr = `${y}-${m}-${day}`;
         
-        if (new Date(dStr) < new Date(primerRegistroStr)) break;
-        
-        if (!logsMap[dStr]) {
-            missing.push(dStr);
-        }
+        if (dStr < primerRegistroStr) break;
+        if (!logsMap[dStr]) missing.push(dStr);
     }
     
     if (missing.length > 0) {
         let html = `<div class="card" style="border-color: var(--amber); background: #1a160e; margin-bottom: 12px;">
             <p style="font-size:.75rem; color:var(--amber); font-weight:bold; margin:0 0 4px 0;">⚠️ AUDITORÍA: DÍAS PENDIENTES</p>
-            <p style="font-size:.7rem; color:var(--mut); margin:0 0 8px 0;">Tienes fechas pasadas sin check-in registrado. Toca una fecha para cargarla:</p>
+            <p style="font-size:.7rem; color:var(--mut); margin:0 0 8px 0;">Fechas pasadas sin check-in. Toca para cargar:</p>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">`;
         missing.forEach(dateStr => {
             html += `<button class="btn" style="width:auto; padding:6px 10px; font-size:0.75rem; background:#2a2212; color:var(--amber); border:1px solid var(--amber); margin-bottom:0;" onclick="seleccionarFechaPendiente('${dateStr}')">${dateStr}</button>`;
@@ -406,7 +528,7 @@ function seleccionarFechaPendiente(dateStr) {
     let dateInput = document.getElementById('inputFechaCheckin');
     if (dateInput) {
         dateInput.value = dateStr;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 
@@ -417,12 +539,12 @@ function renderHistorialMovimientos() {
         cont.innerHTML = `<p style="font-size:0.75rem; color:var(--mut); text-align:center;">Sin registros recientes.</p>`;
         return;
     }
-    cont.innerHTML = state.historialMovimientos.slice(0, 5).map(m => `
+    cont.innerHTML = state.historialMovimientos.slice(0, 20).map(m => `
         <div class="history-item">
             <div>
-                <strong>[${m.fecha}]</strong> ${m.tipo}: ${m.desc}
+                <strong>[${esc(m.fecha)}]</strong> ${esc(m.tipo)}: ${esc(m.desc)}
             </div>
-            <button class="btn btn-r btn-sm" style="margin:0;" onclick="eliminarMovimiento(${m.id})">❌</button>
+            <button class="btn btn-r btn-sm" style="margin:0;" onclick="eliminarMovimiento(${Number(m.id)})">❌</button>
         </div>
     `).join('');
 }
@@ -430,35 +552,78 @@ function renderHistorialMovimientos() {
 function eliminarMovimiento(id) {
     if (!state.historialMovimientos) return;
     let index = state.historialMovimientos.findIndex(m => m.id === id);
-    if (index !== -1) {
-        let mov = state.historialMovimientos[index];
-        if (confirm(`¿Deseas eliminar y revertir este movimiento?\n"${mov.desc}"`)) {
-            if (mov.tipo === 'Check-in') {
-                // Remover de dailyLogs
-                state.dailyLogs = (state.dailyLogs || []).filter(l => !(l.date === mov.fecha));
-            } else if (mov.tipo === 'Inyección Capital') {
-                if (mov.destino === 'bs3') state.bs3Current = Math.max(0, (state.bs3Current || 0) - mov.monto);
-                if (mov.destino === 'acciones') state.accionesTotal = Math.max(0, (state.accionesTotal || 0) - mov.monto);
-                if (mov.destino === 'futuros') state.futurosTotal = Math.max(0, (state.futurosTotal || 0) - mov.monto);
-                if (mov.destino.startsWith('proj_')) {
-                    let projId = Number(mov.destino.replace('proj_', ''));
-                    let p = (state.proyectos || []).find(x => x.id === projId);
-                    if (p) p.current = Math.max(0, p.current - mov.monto);
-                }
-            }
-            state.historialMovimientos.splice(index, 1);
-            updateUI();
-            alert("Movimiento eliminado y revertido con éxito.");
-        }
+    if (index === -1) return;
+    let mov = state.historialMovimientos[index];
+    if (mov.tipo === 'Apertura' && state.historialMovimientos.slice(0, index).some(m => m.tipo === 'Apertura')) {
+        return alert('Hay una apertura más reciente. Revierte primero la apertura más reciente.');
     }
+    if (!confirm(`¿Deseas eliminar y revertir este movimiento?\n"${mov.desc}"`)) return;
+    const snap = JSON.stringify(state);
+    const resta = (v, n) => (v || 0) - (n || 0);
+    const proj = pid => (state.proyectos || []).find(x => x.id === pid);
+
+    if (mov.tipo === 'Check-in') {
+        state.dailyLogs = (state.dailyLogs || []).filter(l => !(l.id === mov.id || (l.id === undefined && l.date === mov.fecha)));
+    } else if (mov.tipo === 'Inyección Capital') {
+        if (mov.destino === 'bs3') state.bs3Current = resta(state.bs3Current, mov.monto);
+        if (mov.destino === 'acciones') state.accionesTotal = resta(state.accionesTotal, mov.monto);
+        if (mov.destino === 'futuros') { state.futurosTotal = resta(state.futurosTotal, mov.monto); state.futurosUSD = r2(resta(state.futurosUSD, mov.usd)); }
+        if (String(mov.destino).startsWith('proj_')) {
+            let p = proj(Number(mov.destino.replace('proj_', '')));
+            if (p) p.current = resta(p.current, mov.monto);
+        }
+    } else if (mov.tipo === 'Aporte Proyecto') {
+        let p = proj(mov.projId);
+        if (p) p.current = resta(p.current, mov.monto);
+    } else if (mov.tipo === 'Retiro BS3') {
+        state.bs3Current = (state.bs3Current || 0) + Number(mov.monto || 0);
+    } else if (mov.tipo === 'Apertura') {
+        let a = mov.aportes || {};
+        state.bs3Current = resta(state.bs3Current, a.bs3);
+        state.accionesTotal = resta(state.accionesTotal, a.acciones);
+        state.futurosTotal = resta(state.futurosTotal, a.futuros);
+        state.futurosUSD = r2(resta(state.futurosUSD, a.futurosUSD));
+        (mov.provisiones || []).forEach(pv => { let p = proj(pv.id); if (p) p.current = resta(p.current, pv.monto); });
+        if (mov.periodoPrev) {
+            state.periodoInicio = mov.periodoPrev.inicio;
+            state.presupuestoPeriodo = mov.periodoPrev.presupuesto;
+            state.periodoCuentaRacha = mov.periodoPrev.cuentaRacha !== false;
+        }
+        state.periodos = (state.periodos || []).filter(p => p.movId !== mov.id);
+    }
+
+    let negativo = state.bs3Current < -0.005 || state.accionesTotal < -0.005 || state.futurosTotal < -0.005 || state.futurosUSD < -0.005 || (state.proyectos || []).some(p => p.current < -0.005);
+    if (negativo) {
+        state = JSON.parse(snap);
+        return alert('No se puede revertir: el saldo quedaría negativo (hay retiros u otros movimientos posteriores que dependen de este dinero). Revierte primero los más recientes.');
+    }
+
+    let delta = { bs3: 0, acciones: 0, futuros: 0 };
+    if (mov.tipo === 'Inyección Capital' && ['bs3', 'acciones', 'futuros'].includes(mov.destino)) delta[mov.destino] = -Number(mov.monto || 0);
+    if (mov.tipo === 'Retiro BS3') delta.bs3 = Number(mov.monto || 0);
+    if (mov.tipo === 'Apertura') { let a = mov.aportes || {}; delta.bs3 = -(a.bs3 || 0); delta.acciones = -(a.acciones || 0); delta.futuros = -(a.futuros || 0); }
+    let hi = (state.history || []).findIndex(h => h.movId === mov.id);
+    if (hi !== -1) {
+        for (let j = hi + 1; j < state.history.length; j++) {
+            state.history[j].bs3 = (state.history[j].bs3 || 0) + delta.bs3;
+            state.history[j].acciones = (state.history[j].acciones || 0) + delta.acciones;
+            state.history[j].futuros = (state.history[j].futuros || 0) + delta.futuros;
+        }
+        state.history.splice(hi, 1);
+    }
+    state.historialMovimientos.splice(index, 1);
+    updateUI();
+    alert("Movimiento eliminado y revertido con éxito.");
 }
 
 function updateUI() {
     let computedStreak = calcularRachaInteligente();
     document.getElementById('streakVal').innerText = computedStreak;
-    document.getElementById('mungerQuote').innerText = `"${MUNGER_QUOTES[Math.floor(Math.random() * MUNGER_QUOTES.length)]}"`;
+    let q = document.getElementById('mungerQuote');
+    if (q && !q.dataset.listo) { q.innerText = `"${MUNGER_QUOTES[Math.floor(parseLocal(hoy()).getTime() / 86400000) % MUNGER_QUOTES.length]}"`; q.dataset.listo = '1'; }
     
     let dateInput = document.getElementById('inputFechaCheckin');
+    if (dateInput) dateInput.max = hoy();
     if (dateInput && !dateInput.value) {
         let now = new Date();
         let year = now.getFullYear();
@@ -470,11 +635,30 @@ function updateUI() {
     renderDiasPendientes();
     renderHistorialMovimientos();
 
-    let dayToDayCat = (state.categoriasGastos || []).find(c => c.isDayToDay);
-    let dayToDayAmount = dayToDayCat ? Number(dayToDayCat.amount || 0) : 0;
-    let techoDiario = dayToDayAmount > 0 ? Math.round(dayToDayAmount / 14) : 0;
-    let techoElem = document.getElementById('techoDiarioDisplay');
-    if (techoElem) techoElem.innerText = formatMoney(techoDiario);
+    let iniPer = state.periodoInicio || null;
+    let pozoTotal = presupuestoPeriodoActual();
+    let gastadoPer = iniPer ? gastadoPeriodo(iniPer) : 0;
+    let remanentePozo = r2(pozoTotal - gastadoPer);
+
+    document.getElementById('pozoTotalDisplay').innerText = formatMoney(pozoTotal);
+    let remElem = document.getElementById('pozoRemanenteDisplay');
+    remElem.innerText = formatMoney(remanentePozo);
+    remElem.style.color = remanentePozo < 0 ? 'var(--red)' : 'var(--green)';
+    let bar = document.getElementById('periodoBar');
+    bar.style.width = (pozoTotal > 0 ? Math.min(100, Math.round((gastadoPer / pozoTotal) * 100)) : 0) + '%';
+    bar.style.background = remanentePozo < 0 ? 'var(--red)' : 'var(--green)';
+    let infoTxt;
+    if (!iniPer) {
+        infoTxt = 'Aún no hay período en curso: haz tu primera apertura en la pestaña Payslip.';
+    } else {
+        infoTxt = `Período desde ${iniPer} (día ${diasEntre(iniPer, hoy()) + 1}) · Gastado ${formatMoney(gastadoPer)}`;
+        if (pozoTotal <= 0) infoTxt += ' · Define el presupuesto Día a Día en tu próxima apertura.';
+        else if (remanentePozo < 0 && state.periodoCuentaRacha !== false) infoTxt += ' · ⚠️ Presupuesto excedido: este período no sumará a tu racha.';
+        if (state.periodoCuentaRacha === false) infoTxt += ' · Este período no cuenta para la racha: la racha parte con tu próxima apertura.';
+    }
+    document.getElementById('periodoInfo').innerText = infoTxt;
+    let inpIni = document.getElementById('inputInicioPeriodo');
+    if (inpIni && document.activeElement !== inpIni) { inpIni.value = iniPer || ''; inpIni.max = hoy(); }
 
     let target = state.metaBS3Custom || 0;
     let current = state.bs3Current || 0;
@@ -485,6 +669,12 @@ function updateUI() {
     document.getElementById('pctVal').innerText = pct + '%';
     document.getElementById('goalProgress').style.width = pct + '%';
 
+
+    let retiros = (state.historialMovimientos || []).filter(m => m.tipo === 'Retiro BS3');
+    let totalRetirado = retiros.reduce((a, m) => a + Number(m.monto || 0), 0);
+    let resumenElem = document.getElementById('retirosResumen');
+    if (resumenElem) resumenElem.innerText = retiros.length ? `Retiros registrados: ${retiros.length} · Total retirado: ${formatMoney(totalRetirado)}` : 'Sin retiros registrados. Tu fondo está intacto.';
+
     let metaInput = document.getElementById('inputMetaBS3Custom');
     if (metaInput && state.metaBS3Custom > 0 && document.activeElement !== metaInput) {
         metaInput.value = state.metaBS3Custom;
@@ -492,13 +682,18 @@ function updateUI() {
 
     document.getElementById('accAcciones').innerText = formatMoney(state.accionesTotal);
     document.getElementById('accFuturos').innerText = formatMoney(state.futurosTotal);
+    document.getElementById('accFuturosUSD').innerText = 'US' + formatMoney(state.futurosUSD);
+
+    document.getElementById('telemetriaBs3').innerText = formatMoney(state.bs3Current);
+    document.getElementById('telemetriaAcciones').innerText = formatMoney(state.accionesTotal);
+    document.getElementById('telemetriaFuturos').innerText = formatMoney(state.futurosTotal);
 
     renderProyectos();
     renderCategoriasGastos();
     renderProvisionProyectosPayslip();
     poblarSelectoresInyeccion();
     calcularPayslip();
-    localStorage.setItem('budget_salinas_state', JSON.stringify(state));
+    guardar();
 }
 
 function guardarMetaBS3() {
@@ -507,6 +702,29 @@ function guardarMetaBS3() {
     state.metaBS3Custom = val;
     updateUI();
     alert('¡Meta soberana del Escudo Defensivo actualizada!');
+}
+
+function retirarBS3() {
+    let monto = parseNum(document.getElementById('inputRetiroMonto').value);
+    let motivo = document.getElementById('inputRetiroMotivo').value.trim();
+    if (monto <= 0) return alert('Ingresa un monto válido mayor a cero.');
+    if (!motivo) return alert('Escribe el motivo del retiro: es lo que mantiene tu registro honesto.');
+    let saldo = state.bs3Current || 0;
+    if (r2(monto) > r2(saldo)) return alert(`No puedes retirar más de lo que hay en el BS3 (${formatMoney(saldo)}).`);
+    if (!confirm(`⚠️ Estás sacando dinero de tu fondo de emergencia.\n\n- Monto: ${formatMoney(monto)}\n- Motivo: ${motivo}\n- Quedará en BS3: ${formatMoney(saldo - monto)}\n\n¿Confirmas el retiro?`)) return;
+
+    state.bs3Current = saldo - monto;
+    const movId = Date.now();
+    const fecha = hoy();
+    if (!state.history) state.history = [];
+    state.history.push({ date: fecha, tipo: 'retiro', movId, bs3: state.bs3Current, acciones: state.accionesTotal, futuros: state.futurosTotal });
+    if (!state.historialMovimientos) state.historialMovimientos = [];
+    state.historialMovimientos.unshift({ id: movId, tipo: 'Retiro BS3', fecha, monto, motivo, desc: `Retiro de ${formatMoney(monto)} del BS3 — ${motivo}` });
+
+    document.getElementById('inputRetiroMonto').value = '';
+    document.getElementById('inputRetiroMotivo').value = '';
+    updateUI();
+    alert(`Retiro registrado. Saldo del BS3: ${formatMoney(state.bs3Current)}.`);
 }
 
 function renderCategoriasGastos() {
@@ -518,9 +736,9 @@ function renderCategoriasGastos() {
     state.categoriasGastos.forEach((cat, index) => {
         let isProtected = cat.isDayToDay;
         html += `<div class="flex-row">
-            <input type="text" value="${cat.name}" ${isProtected ? 'readonly style="flex:1; margin-bottom:0; background:#14181b; color:var(--amber); font-weight:bold;"' : 'onchange="actualizarNombreCat(' + index + ', this.value)" placeholder="Nombre categoría" style="flex:1; margin-bottom:0;"'}>
-            <input type="text" inputmode="numeric" id="cat_amt_${index}" value="${cat.amount > 0 ? cat.amount : ''}" onkeyup="calcularPayslip()" placeholder="Monto ($)" style="flex:1; margin-bottom:0;">
-            ${!isProtected ? `<button class="btn btn-r" style="width:auto; padding:10px; margin:0;" onclick="eliminarCategoriaGasto(${index})">✕</button>` : '<span style="width:30px; text-align:center; font-size:0.7rem; color:var(--mut)">/14</span>'}
+            <input type="text" value="${esc(cat.name)}" ${isProtected ? 'readonly style="flex:1; margin-bottom:0; background:#14181b; color:var(--amber); font-weight:bold;"' : 'onchange="actualizarNombreCat(' + index + ', this.value)" placeholder="Nombre categoría" style="flex:1; margin-bottom:0;"'}>
+            <input type="text" inputmode="decimal" id="cat_amt_${index}" value="${cat.amount > 0 ? cat.amount : ''}" onkeyup="calcularPayslip()" placeholder="Monto ($)" style="flex:1; margin-bottom:0;">
+            ${!isProtected ? `<button class="btn btn-r" style="width:auto; padding:10px; margin:0;" onclick="eliminarCategoriaGasto(${index})">✕</button>` : '<span style="width:30px; text-align:center; font-size:0.7rem; color:var(--mut)"></span>'}
         </div>`;
     });
     cont.innerHTML = html;
@@ -535,6 +753,7 @@ function agregarCategoriaGasto() {
 function actualizarNombreCat(index, val) {
     if (!state.categoriasGastos[index].isDayToDay) {
         state.categoriasGastos[index].name = val;
+        guardarDiferido();
     }
 }
 
@@ -550,9 +769,7 @@ function guardarValoresCategoriasEnMemoria() {
     if (!state.categoriasGastos) return;
     state.categoriasGastos.forEach((cat, index) => {
         let inputElem = document.getElementById(`cat_amt_${index}`);
-        if (inputElem) {
-            cat.amount = parseNum(inputElem.value);
-        }
+        if (inputElem) cat.amount = parseNum(inputElem.value);
     });
 }
 
@@ -567,8 +784,8 @@ function renderProvisionProyectosPayslip() {
     let html = "";
     activos.forEach(p => {
         html += `<div class="flex-row" style="margin-bottom:4px;">
-            <span style="font-size:0.75rem; flex:1;">${p.name} (Meta: ${formatMoney(p.goal)})</span>
-            <input type="text" inputmode="numeric" id="prov_proj_${p.id}" value="${p.provisionQuincenal > 0 ? p.provisionQuincenal : ''}" onkeyup="calcularPayslip()" placeholder="Provisión quincenal ($)" style="flex:1; margin-bottom:0; font-size:0.75rem; padding:6px;">
+            <span style="font-size:0.75rem; flex:1;">${esc(p.name)} (Meta: ${formatMoney(p.goal)})</span>
+            <input type="text" inputmode="decimal" id="prov_proj_${p.id}" value="${p.provisionQuincenal > 0 ? p.provisionQuincenal : ''}" onkeyup="calcularPayslip()" placeholder="Provisión por apertura ($)" style="flex:1; margin-bottom:0; font-size:16px; padding:6px;">
         </div>`;
     });
     cont.innerHTML = html;
@@ -584,9 +801,17 @@ function poblarSelectoresInyeccion() {
     `;
     let activos = (state.proyectos || []).filter(p => p.status === 'activo');
     activos.forEach(p => {
-        html += `<option value="proj_${p.id}">Proyecto: ${p.name}</option>`;
+        html += `<option value="proj_${p.id}">Proyecto: ${esc(p.name)}</option>`;
     });
+    let previo = sel.value;
     sel.innerHTML = html;
+    if (Array.from(sel.options || []).some(o => o.value === previo)) sel.value = previo;
+    toggleInyUSD();
+}
+
+function toggleInyUSD() {
+    let sel = document.getElementById('selectInyDestino'), box = document.getElementById('boxInyUSD');
+    if (sel && box) box.style.display = sel.value === 'futuros' ? 'block' : 'none';
 }
 
 function ejecutarInyeccionCapital() {
@@ -604,8 +829,8 @@ function ejecutarInyeccionCapital() {
         if (pr) destinoTexto = `PROYECTO: ${pr.name.toUpperCase()}`;
     }
 
-    // Doble confirmación visual previa
-    if (!confirm(`¿Confirmas la inyección de capital?\n\n- Monto: ${formatMoney(monto)}\n- Destino: ${destinoTexto}`)) {
+    let usdIny = destino === 'futuros' ? parseNum(document.getElementById('inputInyUSD').value) : 0;
+    if (!confirm(`¿Confirmas la inyección de capital?\n\n- Monto: ${formatMoney(monto)}\n- Destino: ${destinoTexto}${usdIny > 0 ? `\n- USD recibidos: US${formatMoney(usdIny)}` : ''}`)) {
         return;
     }
 
@@ -615,66 +840,71 @@ function ejecutarInyeccionCapital() {
         state.accionesTotal = (state.accionesTotal || 0) + monto;
     } else if (destino === 'futuros') {
         state.futurosTotal = (state.futurosTotal || 0) + monto;
+        state.futurosUSD = r2((state.futurosUSD || 0) + usdIny);
     } else if (destino.startsWith('proj_')) {
         let projId = Number(destino.replace('proj_', ''));
         let p = state.proyectos.find(x => x.id === projId);
-        if (p) {
-            p.current += monto;
-        }
+        if (p) p.current += monto;
     }
 
+    const movId = Date.now();
     if (!state.history) state.history = [];
-    state.history.push({
-        date: new Date().toLocaleDateString('es-CA'),
-        bs3: state.bs3Current,
-        acciones: state.accionesTotal,
-        futuros: state.futurosTotal
-    });
+    if (!destino.startsWith('proj_')) {
+        state.history.push({
+            date: hoy(), tipo: 'inyeccion', movId,
+            bs3: state.bs3Current,
+            acciones: state.accionesTotal,
+            futuros: state.futurosTotal
+        });
+    }
 
     if (!state.historialMovimientos) state.historialMovimientos = [];
     state.historialMovimientos.unshift({
-        id: Date.now(),
+        id: movId,
         tipo: 'Inyección Capital',
         desc: `Inyección de ${formatMoney(monto)} a ${destinoTexto}`,
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: hoy(),
         monto: monto,
+        usd: usdIny,
         destino: destino
     });
 
     document.getElementById('inputInyMonto').value = '';
+    document.getElementById('inputInyUSD').value = '';
     updateUI();
     alert(`¡Inyección de ${formatMoney(monto)} aplicada con éxito!`);
 }
 
-function doCheckIn(success) {
+function doCheckIn() {
     let fecha = document.getElementById('inputFechaCheckin').value;
     if (!fecha) return alert('Selecciona una fecha válida.');
-    
+    if (fecha > hoy()) return alert('No puedes registrar fechas futuras.');
+    if (state.periodoInicio && fecha < state.periodoInicio) return alert(`Ese día (${fecha}) es anterior al inicio del período actual (${state.periodoInicio}) y pertenece a un período ya cerrado. Si el inicio está mal, corrígelo en "Inicio del período actual".`);
+
     let spent = parseNum(document.getElementById('inputGastoHoy').value);
     let detail = document.getElementById('inputDetalleHoy').value.trim();
+    let previo = (state.dailyLogs || []).find(l => l.date === fecha);
+    let aviso = previo ? `\n\n⚠️ Ya existe un registro de este día (${formatMoney(previo.spent)}). Se reemplazará por completo.` : '';
 
-    // Doble confirmación visual previa antes de guardar el check-in
-    if (!confirm(`¿Confirmas el registro de este check-in?\n\n- Fecha: ${fecha}\n- Estado: ${success ? 'CUMPLIÓ (SÍ)' : 'CAÍDA (NO)'}\n- Monto Gastado: ${formatMoney(spent)}\n- Detalle: ${detail || 'Sin detalle'}`)) {
-        return;
-    }
+    if (!confirm(`¿Confirmas el registro de este check-in?\n\n- Fecha: ${fecha}\n- Monto gastado: ${formatMoney(spent)}\n- Detalle: ${detail || 'Sin detalle'}${aviso}`)) return;
 
-    if (!state.dailyLogs) state.dailyLogs = [];
-    
-    state.dailyLogs = state.dailyLogs.filter(l => l.date !== fecha);
-    state.dailyLogs.push({ date: fecha, spent, detail, success });
+    state.dailyLogs = (state.dailyLogs || []).filter(l => l.date !== fecha);
+    state.historialMovimientos = (state.historialMovimientos || []).filter(m => !(m.tipo === 'Check-in' && m.fecha === fecha));
 
-    if (!state.historialMovimientos) state.historialMovimientos = [];
+    const movId = Date.now();
+    state.dailyLogs.push({ id: movId, date: fecha, spent, detail });
     state.historialMovimientos.unshift({
-        id: Date.now(),
+        id: movId,
         tipo: 'Check-in',
-        desc: `${success ? 'Cumplió' : 'Caída'} - Gasto: ${formatMoney(spent)} (${detail || 'Sin detalle'})`,
+        desc: `Gasto: ${formatMoney(spent)} (${detail || 'Sin detalle'})`,
         fecha: fecha,
         monto: spent
     });
-    
+
     document.getElementById('inputGastoHoy').value = '';
     document.getElementById('inputDetalleHoy').value = '';
-    
+    document.getElementById('inputFechaCheckin').value = hoy();
+
     updateUI();
     alert(`Check-in registrado para el día ${fecha}.`);
 }
@@ -707,12 +937,12 @@ function renderProyectos() {
         activos.forEach(p => {
             let pct = Math.min(100, Math.round((p.current / p.goal) * 100));
             html += `<div class="card">
-                <strong>${p.name}</strong><br>
+                <strong>${esc(p.name)}</strong><br>
                 <span style="font-size:.75rem">Progreso: ${formatMoney(p.current)} / ${formatMoney(p.goal)} (${pct}%)</span><br>
-                <span style="font-size:.75rem; color:var(--blue)">Provisión quincenal: ${formatMoney(p.provisionQuincenal)}</span>
+                <span style="font-size:.75rem; color:var(--blue)">Provisión por apertura: ${formatMoney(p.provisionQuincenal)}</span>
                 <div class="p-bg"><div class="p-fill" style="width:${pct}%"></div></div>
                 <div style="display:flex; gap:6px; margin-top:6px;">
-                    <input type="text" inputmode="numeric" id="inputDirectProj_${p.id}" placeholder="Aporte directo ($)" style="margin-bottom:0; flex:1;">
+                    <input type="text" inputmode="decimal" id="inputDirectProj_${p.id}" placeholder="Aporte directo ($)" style="margin-bottom:0; flex:1;">
                     <button class="btn btn-g" style="width:auto; margin-bottom:0;" onclick="aporteDirectoProyecto(${p.id})">SUMAR</button>
                 </div>
                 ${p.current >= p.goal ? `<button class="btn btn-r" onclick="concretarProyecto(${p.id})" style="margin-top:6px">✨ CONCRETAR Y ARCHIVAR</button>` : ''}
@@ -727,7 +957,7 @@ function renderProyectos() {
         let archHtml = "";
         archivados.forEach(p => {
             archHtml += `<div class="card" style="opacity:0.7">
-                <s>${p.name}</s> — Meta: ${formatMoney(p.goal)} <span style="color:var(--green)">[CONCRETADO]</span>
+                <s>${esc(p.name)}</s> — Meta: ${formatMoney(p.goal)} <span style="color:var(--green)">[CONCRETADO]</span>
             </div>`;
         });
         archCont.innerHTML = archHtml;
@@ -740,6 +970,11 @@ function aporteDirectoProyecto(id) {
     let p = state.proyectos.find(x => x.id === id);
     if (p) {
         p.current += monto;
+        if (!state.historialMovimientos) state.historialMovimientos = [];
+        state.historialMovimientos.unshift({
+            id: Date.now(), tipo: 'Aporte Proyecto', fecha: hoy(), projId: id, monto,
+            desc: `Aporte de ${formatMoney(monto)} a "${p.name}"`
+        });
         updateUI();
         alert(`Aporte directo de ${formatMoney(monto)} registrado a "${p.name}".`);
     }
@@ -759,36 +994,32 @@ function calcularPayslip() {
     let activos = (state.proyectos || []).filter(p => p.status === 'activo');
     activos.forEach(p => {
         let inputProv = document.getElementById(`prov_proj_${p.id}`);
-        if (inputProv) {
-            p.provisionQuincenal = parseNum(inputProv.value);
-        }
+        if (inputProv) p.provisionQuincenal = parseNum(inputProv.value);
         totalCompromisos += Number(p.provisionQuincenal || 0);
     });
     
     currentExcedente = sueldo - totalCompromisos;
     document.getElementById('excedenteVal').innerText = formatMoney(currentExcedente);
+    guardarDiferido();
 }
 
 function ejecutarDistribucion() {
     calcularPayslip();
     let sueldo = parseNum(document.getElementById('inputPayslipSueldo').value);
-    let totalCompromisos = 0;
-    if (state.categoriasGastos) {
-        state.categoriasGastos.forEach(cat => totalCompromisos += Number(cat.amount || 0));
-    }
     let activos = (state.proyectos || []).filter(p => p.status === 'activo');
-    activos.forEach(p => {
-        totalCompromisos += Number(p.provisionQuincenal || 0);
-        p.current += Number(p.provisionQuincenal || 0);
-    });
+    let totalCompromisos = 0;
+    (state.categoriasGastos || []).forEach(cat => totalCompromisos += Number(cat.amount || 0));
+    activos.forEach(p => totalCompromisos += Number(p.provisionQuincenal || 0));
     currentExcedente = sueldo - totalCompromisos;
 
     let aBS3 = parseNum(document.getElementById('distBS3').value);
     let aAcciones = parseNum(document.getElementById('distAcciones').value);
     let aFuturos = parseNum(document.getElementById('distFuturos').value);
+    let aFuturosUSD = parseNum(document.getElementById('distFuturosUSD').value);
+    if (aFuturosUSD > 0 && aFuturos <= 0) return alert('Indicaste USD recibidos en Futuros pero no el monto en AUD que enviaste.');
 
     let totalAsignado = aBS3 + aAcciones + aFuturos;
-    if (totalAsignado > currentExcedente) {
+    if (r2(totalAsignado) > r2(currentExcedente)) {
         return alert('Error: Estás intentando distribuir más dinero del excedente libre puro disponible.');
     }
 
@@ -798,79 +1029,175 @@ function ejecutarDistribucion() {
         }
     }
 
-    if (aBS3 > 0) state.bs3Current = (state.bs3Current || 0) + aBS3;
-    if (aAcciones > 0) state.accionesTotal = (state.accionesTotal || 0) + aAcciones;
-    if (aFuturos > 0) state.futurosTotal = (state.futurosTotal || 0) + aFuturos;
-    
+    // Cierre del período anterior (solo si empezó antes de hoy)
+    const fecha = hoy();
+    let cierre = null;
+    if (state.periodoInicio && state.periodoInicio < fecha) {
+        let fin = sumarDias(fecha, -1);
+        let faltan = diasSinCheckin(state.periodoInicio, fin);
+        if (faltan.length > 0) {
+            let lista = faltan.slice(0, 5).join(', ') + (faltan.length > 5 ? '…' : '');
+            if (!confirm(`⚠️ En el período que cierras faltan ${faltan.length} día(s) sin check-in (${lista}).\n\nPuedes cancelar, rellenarlos en la pestaña Racha y repetir la apertura.\n\n¿Cerrar el período igual?`)) return;
+        }
+        let nLogs = logsDePeriodo(state.periodoInicio, fin).length;
+        let gastado = gastadoPeriodo(state.periodoInicio, fin);
+        let presupuesto = presupuestoPeriodoActual();
+        cierre = { inicio: state.periodoInicio, fin, presupuesto, gastado, cuentaRacha: state.periodoCuentaRacha !== false, cumplido: nLogs > 0 && r2(gastado) <= r2(presupuesto), cuentaRacha: state.periodoCuentaRacha !== false };
+    }
+
+    // Recién aquí se aplican los cambios (ya validado y confirmado)
+    let provisiones = [];
+    activos.forEach(p => {
+        let m = Number(p.provisionQuincenal || 0);
+        if (m > 0) { p.current += m; provisiones.push({ id: p.id, monto: m }); }
+    });
+    state.bs3Current = (state.bs3Current || 0) + aBS3;
+    state.accionesTotal = (state.accionesTotal || 0) + aAcciones;
+    state.futurosTotal = (state.futurosTotal || 0) + aFuturos;
+    state.futurosUSD = r2((state.futurosUSD || 0) + aFuturosUSD);
+
+    const movId = Date.now();
     if (!state.history) state.history = [];
     state.history.push({
-        date: new Date().toLocaleDateString('es-CA'),
+        date: fecha, tipo: 'apertura', movId, aporteBS3: aBS3,
         bs3: state.bs3Current,
         acciones: state.accionesTotal,
         futuros: state.futurosTotal
     });
+    if (!state.historialMovimientos) state.historialMovimientos = [];
+    state.historialMovimientos.unshift({
+        id: movId, tipo: 'Apertura', fecha,
+        desc: `Apertura: BS3 ${formatMoney(aBS3)}, Acciones ${formatMoney(aAcciones)}, Futuros ${formatMoney(aFuturos)}${aFuturosUSD > 0 ? ` (US${formatMoney(aFuturosUSD)})` : ''}`,
+        aportes: { bs3: aBS3, acciones: aAcciones, futuros: aFuturos, futurosUSD: aFuturosUSD },
+        provisiones,
+        periodoPrev: { inicio: state.periodoInicio || null, presupuesto: Number(state.presupuestoPeriodo) || 0, cuentaRacha: state.periodoCuentaRacha !== false },
+        cerroPeriodo: !!cierre
+    });
+
+    if (!state.periodos) state.periodos = [];
+    if (cierre) { state.periodos.push({ ...cierre, movId }); }
+    let dd = (state.categoriasGastos || []).find(c => c.isDayToDay);
+    state.presupuestoPeriodo = dd ? Number(dd.amount || 0) : 0;
+    if (!state.periodoInicio || state.periodoInicio < fecha) { state.periodoInicio = fecha; state.periodoCuentaRacha = true; }
 
     document.getElementById('distBS3').value = '';
     document.getElementById('distAcciones').value = '';
     document.getElementById('distFuturos').value = '';
+    document.getElementById('distFuturosUSD').value = '';
     document.getElementById('inputPayslipSueldo').value = '';
 
     updateUI();
-    alert('¡Apertura quincenal ejecutada! Provisiones de proyectos apartadas y excedente puro distribuido con éxito.');
+    alert('¡Apertura ejecutada! Se cerró el período anterior, comenzó uno nuevo con su presupuesto y se distribuyó el excedente.');
 }
 
+// GRÁFICA INSTITUCIONAL CON ETIQUETAS EN BLANCO Y ESCALA AUTOMÁTICA
 function dibujarGrafica() {
     let canvas = document.getElementById('evolutionChart');
     if (!canvas) return;
     let ctx = canvas.getContext('2d');
-    canvas.width = canvas.parentElement.clientWidth - 28;
-    canvas.height = 180;
     
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const containerWidth = canvas.parentElement.clientWidth - 28;
+    const dpr = window.devicePixelRatio || 1;
+    const cw = Math.max(300, containerWidth), ch = 240;
+    canvas.width = cw * dpr; canvas.height = ch * dpr;
+    canvas.style.width = cw + 'px'; canvas.style.height = ch + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, cw, ch);
 
     let history = state.history || [];
+    
+    let paddingLeft = 70;
+    let paddingRight = 20;
+    let paddingTop = 20;
+    let paddingBottom = 45;
+
+    let w = cw - paddingLeft - paddingRight;
+    let h = ch - paddingTop - paddingBottom;
+
+    // Marco y ejes
+    ctx.strokeStyle = '#2a3238';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(paddingLeft, paddingTop, w, h);
+
     if (history.length === 0) {
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '12px monospace';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Sin registros históricos aún. Ejecuta tu primer Payslip.', canvas.width / 2, canvas.height / 2);
+        ctx.fillText('Sin registros históricos aún. Ejecuta tu primer Payslip o Inyección.', cw / 2, ch / 2);
         return;
     }
 
     let maxVal = 100;
-    history.forEach(h => {
-        maxVal = Math.max(maxVal, h.bs3, h.acciones, h.futuros);
+    history.forEach(item => {
+        maxVal = Math.max(maxVal, item.bs3 || 0, item.acciones || 0, item.futuros || 0);
     });
-
-    let padding = 30;
-    let w = canvas.width - padding * 2;
-    let h = canvas.height - padding * 2;
+    maxVal = maxVal * 1.15;
 
     function getX(i) {
-        if (history.length === 1) return padding + w / 2;
-        return padding + (i / (history.length - 1)) * w;
+        if (history.length === 1) return paddingLeft + w / 2;
+        return paddingLeft + (i / (history.length - 1)) * w;
     }
 
     function getY(val) {
-        return canvas.height - padding - (val / maxVal) * h;
+        return paddingTop + h - ((val / maxVal) * h);
     }
 
+    // Líneas de referencia horizontales y escala monetaria (Eje Y en BLANCO)
+    const steps = 4;
+    for (let i = 0; i <= steps; i++) {
+        let valStep = (maxVal / steps) * i;
+        let yPos = getY(valStep);
+        
+        ctx.strokeStyle = '#20262b';
+        ctx.beginPath();
+        ctx.moveTo(paddingLeft, yPos);
+        ctx.lineTo(paddingLeft + w, yPos);
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff'; // Texto en BLANCO
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('$' + Math.round(valStep).toLocaleString('es-CL'), paddingLeft - 8, yPos + 4);
+    }
+
+    // Fechas en eje X (en BLANCO)
+    ctx.textAlign = 'center';
+    history.forEach((item, i) => {
+        let x = getX(i);
+        let fechaCorta = item.date ? item.date.slice(5) : '';
+        ctx.fillStyle = '#ffffff'; // Texto en BLANCO
+        ctx.font = '10px sans-serif';
+        ctx.fillText(fechaCorta, x, paddingTop + h + 22);
+    });
+
     function drawLine(key, color) {
+        if (history.length === 0) return;
+        
         ctx.beginPath();
         ctx.strokeStyle = color;
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
+        
         history.forEach((item, i) => {
             let x = getX(i);
-            let y = getY(item[key]);
+            let y = getY(item[key] || 0);
             if (i === 0) ctx.moveTo(x, y);
             else ctx.lineTo(x, y);
         });
         ctx.stroke();
+
+        history.forEach((item, i) => {
+            let x = getX(i);
+            let y = getY(item[key] || 0);
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, 4, 0, Math.PI * 2);
+            ctx.fill();
+        });
     }
 
-    drawLine('bs3', '#f59e0b');      
-    drawLine('acciones', '#10b981'); 
-    drawLine('futuros', '#3b82f6');  
+    drawLine('bs3', '#f59e0b');
+    drawLine('acciones', '#10b981');
+    drawLine('futuros', '#3b82f6');
 }
 
 function concretarProyecto(id) {
@@ -880,43 +1207,52 @@ function concretarProyecto(id) {
 
 function resetearEstado() {
     if (confirm("⚠️ ¿Estás seguro de que deseas reiniciar la terminal a CERO? Se borrará todo el historial y acumulados.")) {
+        try { localStorage.setItem('budget_salinas_state_previo', JSON.stringify(state)); } catch (e) {}
         localStorage.removeItem('budget_salinas_state');
-        state = { 
-            metaBS3Custom: 0, bs3Current: 0, accionesTotal: 0, futurosTotal: 0, 
-            proyectos: [], dailyLogs: [], history: [], historialMovimientos: [],
-            categoriasGastos: [
-                { id: 'day2day', name: "Presupuesto Día a Día (Efectivo)", amount: 0, isDayToDay: true },
-                { id: 1, name: "Arriendo / Costos Fijos", amount: 0 },
-                { id: 2, name: "Supermercado", amount: 0 },
-                { id: 3, name: "Transporte / Bencina", amount: 0 }
-            ] 
-        };
+        state = estadoInicial();
         updateUI();
         alert('Terminal reiniciada a cero.');
     }
 }
 
 function exportarBackup() {
-    let dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
+    let blob = new Blob([JSON.stringify(state)], { type: 'application/json' });
+    let url = URL.createObjectURL(blob);
     let a = document.createElement('a');
-    a.setAttribute("href", dataStr);
-    a.setAttribute("download", `budget_salinas_backup_${new Date().toLocaleDateString('es-CA')}.json`);
+    a.href = url;
+    a.download = `budget_salinas_backup_${hoy()}.json`;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function importarBackup(event) {
+    let input = event.target;
+    let file = input.files && input.files[0];
+    if (!file) return;
     let reader = new FileReader();
     reader.onload = function(e) {
         try {
             let imported = JSON.parse(e.target.result);
-            if (imported && typeof imported === 'object') {
-                state = imported;
-                updateUI();
-                alert('Backup importado con éxito.');
-            }
+            if (!imported || typeof imported !== 'object' || Array.isArray(imported)) throw new Error('formato');
+            if (!confirm('Esto reemplazará tus datos actuales (se guarda una copia previa). ¿Continuar?')) return;
+            try { localStorage.setItem('budget_salinas_state_previo', JSON.stringify(state)); } catch (e2) {}
+            state = normalizarEstado(imported);
+            updateUI();
+            alert('Backup importado con éxito.');
         } catch (err) { alert('Error al leer el archivo JSON.'); }
+        finally { input.value = ''; }
     };
-    reader.readAsText(event.target.files[0]);
+    reader.readAsText(file);
+}
+
+// Guardar pendientes al cerrar o cambiar de app
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') guardar(); });
+window.addEventListener && window.addEventListener('pagehide', guardar);
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 }
 
 updateUI();
