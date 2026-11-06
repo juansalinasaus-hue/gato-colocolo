@@ -11,8 +11,8 @@ App personal de presupuesto, instalada como PWA en el teléfono.
 1. El código se diseña y se prueba en el chat con Claude.
 2. Cuando está listo y aprobado, se sube directo a `main`. No se usan ramas.
 3. `main` es lo que se ve en el teléfono.
-4. Cada versión estable se marca con una etiqueta: `v0-github` (versión anterior), `v1.0`, `v1.1`...
-5. Para volver atrás se restaura la etiqueta que se necesite.
+4. Cada versión estable se publica en la sección Releases con un nombre claro: `version-original` (antes de la actualización), `version-1`, `version-2`...
+5. Para volver atrás se abre la versión que se necesite en Releases y se restaura su código.
 
 ## Datos
 Los datos viven en el teléfono, no en este repositorio. Se respaldan con el botón "Descargar backup JSON" de la pestaña Payslip.
